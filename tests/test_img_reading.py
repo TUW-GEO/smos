@@ -36,7 +36,7 @@ import numpy.testing as nptest
 
 def test_SMOS_IC_Img():
     fname = os.path.join(os.path.dirname(__file__),
-                         'smos-test-data', 'L3_SMOS_IC', '2018',
+                         'smos-test-data', 'L3_SMOS_IC', 'ASC', '2018',
                          'SM_RE06_MIR_CDF3SA_20180101T000000_20180101T235959_105_001_8.DBL.nc')
     ds = SMOSImg(fname, parameters=['Soil_Moisture'], only_good=True)
     image = ds.read()
@@ -63,7 +63,7 @@ def test_SMOS_IC_Img():
 
 def test_SMOS_IC_Img_flatten():
     fname = os.path.join(os.path.dirname(__file__),
-                         'smos-test-data', 'L3_SMOS_IC', '2018',
+                         'smos-test-data', 'L3_SMOS_IC', 'ASC', '2018',
                          'SM_RE06_MIR_CDF3SA_20180101T000000_20180101T235959_105_001_8.DBL.nc')
     ds = SMOSImg(fname, parameters=['Soil_Moisture'], flatten=True)
     image = ds.read()
