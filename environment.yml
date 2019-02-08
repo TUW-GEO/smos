@@ -1,0 +1,14 @@
+name: smos
+channels:
+  - conda-forge
+dependencies:
+- pandas
+- netcdf4
+- scipy
+- pyresample
+- pip:
+    - pygeobase
+    - pynetcf
+    - repurpose
+    - trollsift
+    - ease_grid

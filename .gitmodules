@@ -1,0 +1,3 @@
+[submodule "tests/smos-test-data"]
+	path = tests/smos-test-data
+	url = https://www.geo.tuwien.ac.at/downloads/gittd/smos-test-data.git/
