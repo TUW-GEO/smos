@@ -2,9 +2,14 @@
 Changelog
 =========
 
+Version 0.x
+===========
+
+
 Version 0.1
 ===========
 
-- Feature A added
-- FIX: nasty bug #1729 fixed
-- add your changes here!
+- First version of SMOS IC image and TS reader
+- Include time series reshuffling
+- Include tests and CI
+- Basic documentation

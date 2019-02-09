@@ -1,4 +1,11 @@
 # Add your requirements here like:
 # numpy
 # scipy>=0.9
-
+pandas
+scipy
+netcdf4
+pyresample
+pynetcf
+pygeobase
+ease_grid
+trollsift

@@ -36,9 +36,8 @@ from datetime import timedelta
 from netCDF4 import Dataset
 
 from pygeogrids.netcdf import load_grid
-from smos.grid import EASE25CellGrid
+from smos.smos_ic.grid import EASE25CellGrid
 
-import matplotlib.pyplot as plt
 
 def filter_physical(param, data):
     '''
@@ -371,9 +370,7 @@ class SMOSTs(GriddedNcOrthoMultiTs):
 
 
 if __name__ == '__main__':
-    from pygeogrids.grids import BasicGrid
     from datetime import datetime
-    import pandas as pd
 
     path = r'H:\code\smos\tests\smos-test-data\2018'
     parameters = ['Days', 'Processing_Flags', 'Quality_Flag', 'RMSE', 'Scene_Flags',
