@@ -36,8 +36,7 @@ from datetime import timedelta
 from netCDF4 import Dataset
 
 from pygeogrids.netcdf import load_grid
-from smos.grid import EASE25CellGrid
-
+from smos.smos_ic.grid import EASE25CellGrid
 
 class SMOSImg(ImageBase):
     """
@@ -337,17 +336,6 @@ class SMOSTs(GriddedNcOrthoMultiTs):
         grid = load_grid(grid_path)
         super(SMOSTs, self).__init__(ts_path, grid, **kwargs)
 
-
-if __name__ == '__main__':
-    from datetime import datetime
-    path_asc = r"R:\Datapool_processed\SMOS\L3_SMOS_IC_Soil_Moisture\smos_asc_ts"
-    path_des = r'D:\data-read\L3_SMOS_IC_DES_timeseries'
-
-    ds_asc = SMOSTs(path_asc, ioclass_kws={'read_bulk':True})
-    ds_des = SMOSTs(path_des, ioclass_kws={'read_bulk':True})
-
-    ts_asc = ds_asc.read(14.24, 37.43)
-    ts_des = ds_des.read(14.24, 37.43)
 
 
 

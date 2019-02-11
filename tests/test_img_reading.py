@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # The MIT License (MIT)
 #
-# Copyright (c) 2016,TU Wien
+# Copyright (c) 2019,TU Wien
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -28,9 +28,8 @@ Tests for reading the image datasets.
 #TODO:
 # add tests for descending image
 
-from smos.interface import SMOSImg, SMOSDs
+from smos.smos_ic.interface import SMOSImg
 import os
-from datetime import datetime
 import numpy as np
 import numpy.testing as nptest
 

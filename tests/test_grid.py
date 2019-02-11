@@ -27,7 +27,7 @@ Tests for the EASE2 25km grid as used in the SMOS data
 '''
 
 import numpy.testing as nptest
-from smos.grid import EASE25CellGrid
+from smos.smos_ic.grid import EASE25CellGrid
 import numpy as np
 
 def test_EASE25CellGrid():

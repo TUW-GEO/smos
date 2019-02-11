@@ -32,8 +32,8 @@ import argparse
 from datetime import datetime
 
 from repurpose.img2ts import Img2Ts
-from smos.interface import SMOSImg, SMOSDs
-from smos.grid import EASE25CellGrid
+from smos.smos_ic.interface import SMOSImg, SMOSDs
+from smos.smos_ic.grid import EASE25CellGrid
 from netCDF4 import Dataset
 
 
