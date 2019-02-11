@@ -38,36 +38,6 @@ from netCDF4 import Dataset
 from pygeogrids.netcdf import load_grid
 from smos.grid import EASE25CellGrid
 
-import matplotlib.pyplot as plt
-
-def filter_physical(param, data):
-    '''
-    Applies filtering to physically possible ranges
-
-    Parameters
-    -------
-    param : str
-        Name of the variable to apply filters for
-    data : np.array
-        Image data of the passed variable to apply filtering on
-
-    Returns
-    -------
-    data_filterd : np.array
-        The filtered data
-    '''
-
-    mask = None
-    # add filters for parameters here like
-    if param == 'Soil_Moisture':
-        # todo: this throws a warning as nans are in the data
-        mask = ~np.greater(data, 0) # attention: use ~ (not) as True values would be masked
-
-    if mask is None:
-        return data
-    else:
-        return np.ma.array(data, mask=mask, fill_value=np.nan).filled()
-
 
 class SMOSImg(ImageBase):
     """
@@ -92,14 +62,10 @@ class SMOSImg(ImageBase):
         Set this to False, to read also the not-recommended flagged data (flag 1).
         By default, only good values (flag 0 ) are read.
         Missing data (flag 2) is ALWAYS skipped (nan).
-    filter_pysical : bool, optional (default:True)
-        Applies filters regarding the physical limitation of variables to the data
-        i.e.    - Soil Moisture must be > 0
-                -
     """
 
     def __init__(self, filename, mode='r', parameters='Soil_Moisture', flatten=False,
-                 grid=None, only_good=False, filter_physical=True):
+                 grid=None, only_good=False):
 
         super(SMOSImg, self).__init__(filename, mode=mode)
 
@@ -111,7 +77,6 @@ class SMOSImg(ImageBase):
         # By default, only good land points are read.
         # To override this behaviour the good_flags can be changed.
         self.good_flags = [0] if only_good else [0, 1]
-        self.filter_physical = filter_physical
 
         self.parameters = parameters
         self.flatten = flatten
@@ -183,8 +148,6 @@ class SMOSImg(ImageBase):
                 data = data.astype(np.float32)
             data_masked = np.ma.array(data, mask=flag_mask, fill_value=np.nan)
             return_img[param] = data_masked.filled()
-            if self.filter_physical:
-                return_img[param] = filter_physical(param, return_img[param])
             return_img[param] = return_img[param].flatten()
 
         if 'Quality_Flag' not in self.parameters:
@@ -253,13 +216,21 @@ class SMOSDs(MultiTemporalImageBase):
     parameter : string or list, optional
         one or list of parameters to read, see SMOS documentation
         for more information (default: 'Soil_Moisture').
-    array_1D: boolean, optional
+    flatten: boolean, optional
         If set then the data is read into 1D arrays.
         Needed for some legacy code.
+    grid : pygeogrids.CellGrid
+        Grid that the image data is organised on
+    only_good : bool
+        Read only points that have the quality flag 0.
+        If this is False, also points with quality flag 1 are read,
+        flag 2 (missing data) will always be nan,.
+    filter_physical : bool
+        Filter data that is out of the physical possible range and replace by nan.
     """
 
     def __init__(self, data_path, parameters='Soil_Moisture', flatten=False,
-                 grid=None, only_good=False, filter_physical=False, asc=True):
+                 grid=None, only_good=False, filter_physical=False):
 
         ioclass_kws = {'parameters': parameters,
                        'flatten': flatten,
@@ -269,10 +240,7 @@ class SMOSDs(MultiTemporalImageBase):
 
         sub_path = ['%Y']
 
-        if asc: # ascending template
-            filename_templ = "SM_RE06_MIR_CDF3SA_{datetime}T000000_{datetime}T235959_105_001_8.DBL.nc"
-        else: # descending template
-            filename_templ = "SM_RE06_MIR_CDF3SD_{datetime}T000000_{datetime}T235959_105_001_8.DBL.nc"
+        filename_templ = "SM_RE06_MIR_CDF3S*_{datetime}T000000_{datetime}T235959_105_*_8.DBL.nc"
 
         super(SMOSDs, self).__init__(data_path, ioclass=SMOSImg,
                                      fname_templ=filename_templ,
@@ -371,36 +339,15 @@ class SMOSTs(GriddedNcOrthoMultiTs):
 
 
 if __name__ == '__main__':
-    from pygeogrids.grids import BasicGrid
     from datetime import datetime
-    import pandas as pd
+    path_asc = r"R:\Datapool_processed\SMOS\L3_SMOS_IC_Soil_Moisture\smos_asc_ts"
+    path_des = r'D:\data-read\L3_SMOS_IC_DES_timeseries'
 
-    path = r'H:\code\smos\tests\smos-test-data\2018'
-    parameters = ['Days', 'Processing_Flags', 'Quality_Flag', 'RMSE', 'Scene_Flags',
-                  'Soil_Moisture', 'Soil_Moisture_StdError',
-                  'Soil_Temperature_Level1', 'UTC_Microseconds', 'UTC_Seconds']
+    ds_asc = SMOSTs(path_asc, ioclass_kws={'read_bulk':True})
+    ds_des = SMOSTs(path_des, ioclass_kws={'read_bulk':True})
 
-    readfile = ['SM_RE06_MIR_CDF3SA_20180101T000000_20180101T235959_105_001_8.DBL.nc',
-                'SM_RE06_MIR_CDF3SA_20180104T000000_20180104T235959_105_001_8.DBL.nc']
-
-    for file in readfile:
-        #ts = ds.read()
-        pass
-
-    path = r'H:\code\smos\tests\smos-test-data\L3_SMOS_IC'
-    ds = SMOSImg(os.path.join(path, '2018', 'SM_RE06_MIR_CDF3SA_20180101T000000_20180101T235959_105_001_8.DBL.nc'),
-                 parameters=parameters, flatten=True)
-
-    img = ds.read(datetime(2018,1,1))
-
-    ds = SMOSDs(data_path=path, parameters=parameters, filter_physical=True,
-                only_good=False, flatten=True)
-
-    img_iterator = ds.iter_images(datetime(2018,1,1), datetime(2018,1,5))
-
-    for img in img_iterator:
-        print(img.data)
-        print img.data['Soil_Moisture'].shape
+    ts_asc = ds_asc.read(14.24, 37.43)
+    ts_des = ds_des.read(14.24, 37.43)
 
 
 

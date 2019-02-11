@@ -65,7 +65,6 @@ def firstfile(input_root):
 
     raise(IOError, 'No netcdf data found under the passed root directory')
 
-
 def mkdate(datestring):
     """
     Create date string.
@@ -108,21 +107,13 @@ def reshuffle(input_root, outputpath,
     parameters: list
         parameters to read and convert
     img_kwargs: dict
-        Special image kwargs as include_not_recommended, filter_physical, ...
+        Kwargs that are passed to the image class
     imgbuffer: int, optional
         How many images to read at once before writing time series.
     """
 
     ff, file_vars = firstfile(input_root)
     fp, ff = os.path.split(ff)
-
-    if 'CDF3SA' in ff:
-        asc = True
-    else:
-        asc = False
-
-    #lats, lons = np.meshgrid(lats, lons)
-    #grid = BasicGrid(lons.flatten(), lats.flatten()).to_cell_grid(cellsize=5.)
 
     grid = EASE25CellGrid()
 
@@ -135,7 +126,7 @@ def reshuffle(input_root, outputpath,
     ts_attributes = data.metadata
     ts_attributes = None # todo: fails for Quality_Flags
 
-    input_dataset = SMOSDs(input_root, parameters, grid=grid, flatten=True, asc=asc,
+    input_dataset = SMOSDs(input_root, parameters, grid=grid, flatten=True,
                            **img_kwargs)
 
     if not os.path.exists(outputpath):
@@ -197,9 +188,6 @@ def parse_args(args):
                               "if this is False, also 1-flagged (not recommended) "
                               "ones will be read and reshuffled"))
 
-    parser.add_argument("--filter_physical", type=bool, default=True,
-                        help=("Ignore values that are out of the physically possible "
-                              "boundaries of a variable (e.g. SM < 0)"))
 
     parser.add_argument("--imgbuffer", type=int, default=50,
                         help=("How many images to read at once. Bigger "
@@ -232,8 +220,7 @@ def main(args):
               args.start,
               args.end,
               args.parameters,
-              img_kwargs={'only_good': args.only_good,
-                          'filter_physical': args.filter_physical},
+              img_kwargs={'only_good': args.only_good},
               imgbuffer=args.imgbuffer)
 
 
@@ -242,16 +229,9 @@ def run():
     main(sys.argv[1:])
 
 if __name__ == '__main__':
-    ds_root = r'H:\code\smos\tests\smos-test-data\L3_SMOS_IC'
-    ts_root = r'\\project12\data-write\USERS\wpreimes\SMOS_IC_ASC_ts'
-    '''
-    from interface import SMOSTs
-    ds = SMOSTs(ts_root)
-    ts = ds.read(45.21,-24.37)
-    print(ts)
-    '''
-    
+    '''    
     main([ds_root, ts_root, '2018-01-01', '2018-01-05', '--parameters', 'Soil_Moisture',
           'Days', 'Processing_Flags', 'Quality_Flag', 'RMSE', 'Scene_Flags', 'Soil_Moisture',
           'Soil_Moisture_StdError', 'Soil_Temperature_Level1', 'UTC_Microseconds', 'UTC_Seconds',
-          '--only_good', False, '--filter_physical', False])
+          '--only_good', False])
+    '''
