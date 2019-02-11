@@ -1,66 +1,38 @@
-Reading GLDAS images
---------------------
+Reading images
+==============
 
-Reading of the GLDAS raw grib files can be done in two ways.
+`L3_SMOS_IC <https://www.catds.fr/Products/Available-products-from-CEC-SM/SMOS-IC>`_
+------------------------------------------
 
-Reading by file name
-~~~~~~~~~~~~~~~~~~~~
-
-.. code-block:: python
-
-    import os
-    from datetime import datetime
-    from gldas.interface import GLDAS_Noah_v1_025Img
-
-    # read several parameters
-    parameter = ['086_L2', '086_L1', '085_L1', '138', '132', '051']
-    # the class is initialized with the exact filename.
-    img = GLDAS_Noah_v1_025Img(os.path.join(os.path.dirname(__file__),
-                                            'test-data',
-                                            'GLDAS_NOAH_image_data',
-                                            '2015',
-                                            '001',
-                                            'GLDAS_NOAH025SUBP_3H.A2015001.0000.001.2015037193230.grb'),
-                              parameter=parameter)
-
-    # reading returns an image object which contains a data dictionary
-    # with one array per parameter. The returned data is a global 0.25 degree
-    # image/array.
-    image = img.read()
-
-    assert image.data['086_L1'].shape == (720, 1440)
-    assert image.lon[0, 0] == -179.875
-    assert image.lon[0, 1439] == 179.875
-    assert image.lat[0, 0] == 89.875
-    assert image.lat[719, 0] == -89.875
-    assert sorted(image.data.keys()) == sorted(parameter)
-    assert image.data['086_L1'][26, 609] == 30.7344
-    assert image.data['086_L2'][26, 609] == 93.138
-    assert image.data['085_L1'][576, 440] == 285.19
-    assert image.data['138'][26, 609] == 237.27
-    assert image.data['051'][26, 609] == 0
-    assert image.lon.shape == (720, 1440)
-    assert image.lon.shape == image.lat.shape
-
-Reading by date
-~~~~~~~~~~~~~~~
-
-All the gldas data in a directory structure can be accessed by date.
-The filename is automatically built from the given date.
+After downloading the data you will have a path with subpaths of the format
+``YYYY.MM.DD``. Let's call this path ``root_path``. To read 'Soil_Moisture'
+data for the descending overpass of a certain date use the following code:
 
 .. code-block:: python
 
-    from gldas.interface import GLDAS_Noah_v1_025Ds
+   from smos.smos_ic import SMOSDs
+   root_path = os.path.join(os.path.dirname(__file__),
+                            'test_data', 'SMOS_IC')
+   ds = SMOSDs(root_path, parameters='Soil_Moisture')
+   image = ds.read(datetime(2018, 1, 1))
+   assert list(image.data.keys()) == ['Soil_Moisture']
+   sm_data = image.data['Soil_Moisture]
 
-    parameter = ['086_L2', '086_L1', '085_L1', '138', '132', '051']
-    img = GLDAS_Noah_v1_025Ds(data_path=os.path.join(os.path.dirname(__file__),
-                                                    'test-data',
-                                                    'GLDAS_NOAH_image_data'),
-                              parameter=parameter)
+The returned image is of the type `pygeobase.Image
+<http://pygeobase.readthedocs.io/en/latest/api/pygeobase.html#pygeobase.object_base.Image>`_.
+Which is only a small wrapper around a dictionary of numpy arrays.
 
-    image = img.read(datetime(2015, 1, 1, 0))
+If you only have a single image you can also read the data directly
 
+.. code-block:: python
 
-For reading all image between two dates the
-:py:meth:`gldas.interface.GLDAS_Noah_v1_025Ds.iter_images` iterator can be
-used.
+   from smos.smos_ic import SMOSImg
+   fname = os.path.join(os.path.dirname(__file__),
+                        'test_data', 'SMOS_IC', '2018',
+                        'SM_RE06_MIR_CDF3SA_20180101T000000_20180101T235959_105_001_8.DBL.nc')
+   img = SMOSImg(fname, parameters=['Soil_Moisture'])
+
+   image = ds.read()
+   assert list(image.data.keys()) == ['Soil_Moisture']
+   sm_data = image.data['Soil_Moisture]
+
