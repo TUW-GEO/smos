@@ -3,16 +3,16 @@ SMOS
 ====
 
 .. image:: https://travis-ci.org/TUW-GEO/smos.svg?branch=master
-    :target: https://travis-ci.org/TUW-GEO/smos
+    :target: https://travis-ci.org/TUW-GEO/smos 
 
 .. image:: https://coveralls.io/repos/github/TUW-GEO/smos/badge.svg?branch=master
-   :target: https://coveralls.io/github/TUW-GEO/smos?branch=master
+    :target: https://coveralls.io/github/TUW-GEO/smos?branch=master 
 
 .. image:: https://badge.fury.io/py/smos.svg
-    :target: http://badge.fury.io/py/smos
+    :target: http://badge.fury.io/py/smos 
 
 .. image:: https://readthedocs.org/projects/smos/badge/?version=latest
-   :target: http://smos.readthedocs.org/
+   :target: http://smos.readthedocs.org/ 
 
 
 SMOS (Soil Moisture and Ocean Salinity) data readers and time series coverter.
