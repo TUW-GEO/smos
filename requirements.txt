@@ -9,3 +9,4 @@ pynetcf
 pygeobase
 ease_grid
 trollsift
+more_itertools

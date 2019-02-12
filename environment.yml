@@ -13,3 +13,4 @@ dependencies:
     - repurpose
     - trollsift
     - ease_grid
+    - more_itertools
