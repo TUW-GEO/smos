@@ -5,6 +5,7 @@ numpy>=1.13.0
 pandas
 scipy
 netcdf4
+repurpose
 pyresample
 pynetcf
 pygeobase

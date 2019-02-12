@@ -29,7 +29,7 @@ commands:
 
 .. code-block:: shell
 
-  conda create -q -n smos -c conda-forge numpy netcdf4==1.2.2 pyresample scipy pandas
+  conda create -q -n smos -c conda-forge numpy netcdf4 pyresample scipy pandas
   source activate smos
   pip install smos
 
