@@ -1,6 +1,7 @@
 # Add your requirements here like:
 # numpy
 # scipy>=0.9
+numpy>=1.13.0
 pandas
 scipy
 netcdf4

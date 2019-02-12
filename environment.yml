@@ -2,7 +2,7 @@ name: smos
 channels:
   - conda-forge
 dependencies:
-
+- numpy>=1.13.0
 - pandas
 - netcdf4
 - scipy
