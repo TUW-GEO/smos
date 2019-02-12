@@ -219,18 +219,15 @@ class SMOSDs(MultiTemporalImageBase):
         Read only points that have the quality flag 0.
         If this is False, also points with quality flag 1 are read,
         flag 2 (missing data) will always be nan,.
-    filter_physical : bool
-        Filter data that is out of the physical possible range and replace by nan.
     """
 
     def __init__(self, data_path, parameters='Soil_Moisture', flatten=False,
-                 grid=None, only_good=False, filter_physical=False):
+                 grid=None, only_good=False):
 
         ioclass_kws = {'parameters': parameters,
                        'flatten': flatten,
                        'grid': grid,
-                       'only_good': only_good,
-                       'filter_physical': filter_physical}
+                       'only_good': only_good}
 
         sub_path = ['%Y']
 
@@ -330,9 +327,6 @@ class SMOSTs(GriddedNcOrthoMultiTs):
 
         grid = load_grid(grid_path)
         super(SMOSTs, self).__init__(ts_path, grid, **kwargs)
-
-
-
 
 
 

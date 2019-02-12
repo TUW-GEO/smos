@@ -40,7 +40,3 @@ def test_EASE25CellGrid():
     nptest.assert_almost_equal(grid.activearrlat[316922], -12.55398284007352, 5)
     nptest.assert_almost_equal(grid.activearrlon[316922], -61.08069164265129, 5)
     assert grid.activearrcell[316922] == 843
-
-
-if __name__ == '__main__':
-    test_EASE25CellGrid()

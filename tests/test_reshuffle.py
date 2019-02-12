@@ -41,7 +41,7 @@ def test_SMOS_IC_reshuffle():
     parameters = ["--parameters","Soil_Moisture"]
 
     args = [inpath, ts_path, startdate, enddate] + \
-           parameters + ['--only_good', False] + ['--filter_physical', False]
+           parameters + ['--only_good', False]
 
     main(args)
     assert len(glob.glob(os.path.join(ts_path, "*.nc"))) == 2449
@@ -52,6 +52,3 @@ def test_SMOS_IC_reshuffle():
 
     ds.close()
     shutil.rmtree(ts_path)
-
-if __name__ == '__main__':
-    test_SMOS_IC_reshuffle()
