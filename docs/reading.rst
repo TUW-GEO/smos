@@ -10,7 +10,7 @@ data for the descending overpass of a certain date use the following code:
 
 .. code-block:: python
 
-   from smos.smos_ic import SMOSDs
+   from smos.smos_ic.interface import SMOSDs
    root_path = os.path.join(os.path.dirname(__file__),
                             'test_data', 'SMOS_IC')
    ds = SMOSDs(root_path, parameters='Soil_Moisture')
@@ -26,7 +26,7 @@ If you only have a single image you can also read the data directly
 
 .. code-block:: python
 
-   from smos.smos_ic import SMOSImg
+   from smos.smos_ic.interface import SMOSImg
    fname = os.path.join(os.path.dirname(__file__),
                         'test_data', 'SMOS_IC', '2018',
                         'SM_RE06_MIR_CDF3SA_20180101T000000_20180101T235959_105_001_8.DBL.nc')
