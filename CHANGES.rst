@@ -4,7 +4,8 @@ Changelog
 
 Version 0.x
 ===========
-
+- By default also reshuffle if Scene_Flag is 2
+- Update documentation
 
 Version 0.1
 ===========

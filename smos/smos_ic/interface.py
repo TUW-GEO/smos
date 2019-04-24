@@ -43,7 +43,7 @@ class SMOSImg(ImageBase):
         filename of the SMOS nc image file
     mode: string, optional (default: 'r')
         mode of opening the file, only 'r' is implemented at the moment
-    parameter : string or list, optional (default: Soil_Moisture)
+    parameters : string or list, optional (default: Soil_Moisture)
         one or list of parameters to read, see SMOS documentation
         for more information (default: 'Soil_Moisture').
     flatten: boolean, optional (default:False)
@@ -327,7 +327,3 @@ class SMOSTs(GriddedNcOrthoMultiTs):
 
         grid = load_grid(grid_path)
         super(SMOSTs, self).__init__(ts_path, grid, **kwargs)
-
-
-
-

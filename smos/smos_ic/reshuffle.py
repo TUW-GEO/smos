@@ -63,7 +63,8 @@ def firstfile(input_root):
 
                 return firstfile, vars
 
-    raise(IOError, 'No netcdf data found under the passed root directory')
+    raise (IOError, 'No netcdf data found under the passed root directory')
+
 
 def mkdate(datestring):
     """
@@ -82,11 +83,13 @@ def mkdate(datestring):
     if len(datestring) == 16:
         return datetime.strptime(datestring, '%Y-%m-%dT%H:%M')
 
+
 def str2bool(val):
     if val in ['True', 'true', 't', 'T', '1']:
         return True
     else:
         return False
+
 
 def reshuffle(input_root, outputpath,
               startdate, enddate,
@@ -124,7 +127,7 @@ def reshuffle(input_root, outputpath,
     input_dataset = SMOSImg(os.path.join(fp, ff), parameters, grid=grid, flatten=True, **img_kwargs)
     data = input_dataset.read()
     ts_attributes = data.metadata
-    ts_attributes = None # todo: fails for Quality_Flags
+    ts_attributes = None  # todo: fails for Quality_Flags
 
     input_dataset = SMOSDs(input_root, parameters, grid=grid, flatten=True,
                            **img_kwargs)
@@ -135,7 +138,6 @@ def reshuffle(input_root, outputpath,
     global_attr = {'product': 'SMOS_IC'}
 
     # get time series attributes from first day of data.
-
 
     reshuffler = Img2Ts(input_dataset=input_dataset, outputpath=outputpath,
                         startdate=startdate, enddate=enddate, input_grid=grid,
@@ -180,27 +182,29 @@ def parse_args(args):
     parser.add_argument("--parameters", metavar="parameters", default=None,
                         nargs="+",
                         help=("Parameters to reshuffle into time series format. "
-                              "e.g. Soil_Moisture if this is not specified, all "
-                              "variables in the image file will be reshuffled"))
+                              "e.g. Soil_Moisture. If this is not specified, all "
+                              "variables in the image file will be reshuffled. "
+                              "Default: None"))
 
-    parser.add_argument("--only_good", type=bool, default=True,
+    parser.add_argument("--only_good", type=bool, default=False,
                         help=("Read only 0-flagged (GOOD) observations, "
                               "if this is False, also 1-flagged (not recommended) "
-                              "ones will be read and reshuffled"))
+                              "ones will be read and reshuffled, 2-flagged (missing)"
+                              "values are always excluded. Excluded values are replaced"
+                              "by NaNs. Default: False"))
 
-
-    parser.add_argument("--imgbuffer", type=int, default=50,
+    parser.add_argument("--imgbuffer", type=int, default=100,
                         help=("How many images to read at once. Bigger "
                               "numbers make the conversion faster but "
-                              "consume more memory."))
+                              "consume more memory. Default: 100"))
 
     args = parser.parse_args(args)
     # set defaults that can not be handled by argparse
 
     print("Converting data from {} to"
           " {} into folder {}.".format(args.start.isoformat(),
-                                      args.end.isoformat(),
-                                      args.timeseries_root))
+                                       args.end.isoformat(),
+                                       args.timeseries_root))
 
     return args
 
@@ -224,14 +228,5 @@ def main(args):
               imgbuffer=args.imgbuffer)
 
 
-
 def run():
     main(sys.argv[1:])
-
-if __name__ == '__main__':
-    '''    
-    main([ds_root, ts_root, '2018-01-01', '2018-01-05', '--parameters', 'Soil_Moisture',
-          'Days', 'Processing_Flags', 'Quality_Flag', 'RMSE', 'Scene_Flags', 'Soil_Moisture',
-          'Soil_Moisture_StdError', 'Soil_Temperature_Level1', 'UTC_Microseconds', 'UTC_Seconds',
-          '--only_good', False])
-    '''
