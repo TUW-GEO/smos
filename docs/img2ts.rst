@@ -23,11 +23,25 @@ program. An example would be:
 
 .. code-block:: shell
 
-   smos_ic_repurpose /image_data /timeseries/data 2011-01-01 2011-01-02
+   smos_repurpose /image_data /timeseries/data 2011-01-01 2011-01-02 --parameters Soil_Moisture
 
-Which would take GLDAS Noah data stored in ``/gldas_data`` from January 1st
-2011 to January 2nd 2011 and store all parameters in the image files as time
-series in the folder ``/timeseries/data``.
+Which would take Soil_Moisture values from SMOS IC images stored in ``/image_data`` from January 1st
+2011 to January 2nd 2011 and store the values as time series in the folder ``/timeseries/data``.
+
+Keywords that can be used in smos_repurpose:
+
+- **-h (--help)** : Shows the help text for the reshuffle function
+- **--parameters** : Parameters to reshuffle into time series format. e.g.
+  Soil_Moisture. If this is not specified, all parameters in the first detected image
+  file will be reshuffled. Default: None.
+- **--only_good** : Read only 0-flagged (GOOD) observations (by Quality_Flag),
+  if this is set to False, also 1-flagged (not recommended) ones will be read and reshuffled,
+  2-flagged (missing) values are always excluded. Excluded values are replaced by NaNs.
+  Default: False.
+- **--imgbuffer** : The number of images that are read into memory before converting
+  them into time series. Bigger numbers make the conversion faster but consume more memory.
+  Default: 100.
+
 
 Conversion to time series is performed by the `repurpose package
 <https://github.com/TUW-GEO/repurpose>`_ in the background. For custom settings
