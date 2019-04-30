@@ -124,7 +124,8 @@ def reshuffle(input_root, outputpath,
         parameters = [p for p in file_vars if p not in ['lat', 'lon', 'time']]
 
     # this is only for reading the ts_attrs
-    input_dataset = SMOSImg(os.path.join(fp, ff), parameters, grid=grid, flatten=True, **img_kwargs)
+    input_dataset = SMOSImg(filename=os.path.join(fp, ff),
+        parameters=parameters, grid=grid, flatten=True, **img_kwargs)
     data = input_dataset.read()
     ts_attributes = data.metadata
     ts_attributes = None  # todo: fails for Quality_Flags
