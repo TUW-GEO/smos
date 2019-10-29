@@ -93,14 +93,15 @@ def str2bool(val):
 
 def reshuffle(input_root, outputpath,
               startdate, enddate,
-              parameters=None, img_kwargs={},
+              parameters=None, ds_kwargs=None,
               imgbuffer=50):
     """
     Reshuffle method applied to SMOS image data.
+
     Parameters
     ----------
     input_root: string
-        input path where gldas data was downloaded
+        input path where smos ic data was downloaded to (yearly folders)
     outputpath : string
         Output path.
     startdate : datetime
@@ -109,8 +110,8 @@ def reshuffle(input_root, outputpath,
         End date.
     parameters: list
         parameters to read and convert
-    img_kwargs: dict
-        Kwargs that are passed to the image class
+    ds_kwargs: dict
+        Kwargs that are passed to the image datastack class
     imgbuffer: int, optional
         How many images to read at once before writing time series.
     """
@@ -118,20 +119,22 @@ def reshuffle(input_root, outputpath,
     ff, file_vars = firstfile(input_root)
     fp, ff = os.path.split(ff)
 
-    grid = EASE25CellGrid()
-
     if parameters is None:
         parameters = [p for p in file_vars if p not in ['lat', 'lon', 'time']]
 
+    if ds_kwargs is None:
+        ds_kwargs = {}
+
+    if 'grid' not in ds_kwargs.keys():
+        ds_kwargs['grid'] = EASE25CellGrid()
+
     # this is only for reading the ts_attrs
     input_dataset = SMOSImg(filename=os.path.join(fp, ff),
-        parameters=parameters, grid=grid, flatten=True, **img_kwargs)
+        parameters=parameters, flatten=True, grid=ds_kwargs['grid'], read_flags=None)
     data = input_dataset.read()
     ts_attributes = data.metadata
-    ts_attributes = None  # todo: fails for Quality_Flags
 
-    input_dataset = SMOSDs(input_root, parameters, grid=grid, flatten=True,
-                           **img_kwargs)
+    input_dataset = SMOSDs(input_root, parameters, flatten=True, **ds_kwargs)
 
     if not os.path.exists(outputpath):
         os.makedirs(outputpath)
@@ -141,7 +144,7 @@ def reshuffle(input_root, outputpath,
     # get time series attributes from first day of data.
 
     reshuffler = Img2Ts(input_dataset=input_dataset, outputpath=outputpath,
-                        startdate=startdate, enddate=enddate, input_grid=grid,
+                        startdate=startdate, enddate=enddate, input_grid=ds_kwargs['grid'],
                         imgbuffer=imgbuffer, cellsize_lat=5.0,
                         cellsize_lon=5.0, global_attr=global_attr, zlib=True,
                         unlim_chunksize=1000, ts_attributes=ts_attributes)
@@ -220,12 +223,13 @@ def main(args):
     """
     args = parse_args(args)
 
+    flags = (0) if args.only_good else (0, 1)
     reshuffle(args.dataset_root,
               args.timeseries_root,
               args.start,
               args.end,
               args.parameters,
-              img_kwargs={'only_good': args.only_good},
+              ds_kwargs={'read_flags': flags},
               imgbuffer=args.imgbuffer)
 
 
