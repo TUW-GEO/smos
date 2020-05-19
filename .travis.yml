@@ -26,11 +26,8 @@ install:
   # Useful for debugging any issues with conda
   - conda info -a
 
-  - conda create -n smos python=${TRAVIS_PYTHON_VERSION}
+  - bash install.sh -d --python ${TRAVIS_PYTHON_VERSION} --name smos
   - source activate smos
-  - conda env update -f environment.yml
-
-  - python setup.py develop
 
   - conda list
   - pip list

@@ -33,8 +33,6 @@ from netCDF4 import Dataset
 from pygeogrids.netcdf import load_grid
 from smos.smos_ic.grid import EASE25CellGrid
 
-import matplotlib.pyplot as plt
-
 class SMOSImg(ImageBase):
     """
     Class for reading one SMOS nc image file.
@@ -155,7 +153,6 @@ class SMOSImg(ImageBase):
     def read_masked_data(self, **kwargs):
         raise NotImplementedError
 
-
     def read(self, timestamp=None):
         '''
         Read a single SMOS image, if it exists, else read an empty image
@@ -171,7 +168,8 @@ class SMOSImg(ImageBase):
         try:
             return_img, return_metadata = self.read_img()
         except IOError:
-            warnings.warn('Error loading image for {}, generating empty image instead'.format(timestamp.date()))
+            warnings.warn('Error loading image for {}, '
+                          'generating empty image instead'.format(timestamp.date()))
             return_img, return_metadata = self.read_empty()
 
         if self.flatten:
@@ -198,8 +196,6 @@ class SMOSImg(ImageBase):
 
     def close(self):
         pass
-
-
 
 class SMOSDs(MultiTemporalImageBase):
     """
