@@ -15,7 +15,7 @@ SMOS
    :target: http://smos.readthedocs.org/
 
 
-SMOS (Soil Moisture and Ocean Salinity) data readers and time series coverter.
+SMOS (Soil Moisture and Ocean Salinity) data readers and time series converter.
 
 Works great in combination with `pytesmo <https://github.com/TUW-GEO/pytesmo>`_.
 
