@@ -51,27 +51,22 @@ class SMOSImg(ImageBase):
         Needed for some legacy code.
     grid : pygeogrids.BasicGrid, optional (default: None)
         A grid object, on which the image data is organised. If None is passed,
-
-    only_good : bool, optional (default: True)
-        Set this to False, to read also the not-recommended flagged data (flag 1).
-        By default, only good values (flag 0 ) are read.
-        Missing data (flag 2) is ALWAYS skipped (nan).
+    read_flags : bool or None, optional (default: (0, 1))
+        Filter values to read based on the selected Quality Flags.
+        Values for locations that are not assigned any of the here passed flags
+        are replaces with NaN (by default only the missing-data, i.e. flag=2,
+        locations are filtered out). If None is passed, no flags are considered.
     """
 
     def __init__(self, filename, mode='r', parameters='Soil_Moisture', flatten=False,
-                 grid=None, only_good=False):
+                 grid=None, read_flags=(0,1)):
 
         super(SMOSImg, self).__init__(filename, mode=mode)
 
         if type(parameters) != list:
             parameters = [parameters]
 
-        self.only_good = only_good
-
-        # By default, only good land points are read.
-        # To override this behaviour the good_flags can be changed.
-        self.good_flags = [0] if only_good else [0, 1]
-
+        self.read_flags = read_flags
         self.parameters = parameters
         self.flatten = flatten
 
@@ -113,7 +108,9 @@ class SMOSImg(ImageBase):
         return_img = {}
         return_metadata = {}
 
-        parameters = self.parameters + ['Quality_Flag']
+        parameters = list(self.parameters)
+        if self.read_flags is not None:
+            parameters += ['Quality_Flag']
 
         for parameter in parameters:
             metadata = {}
@@ -135,7 +132,10 @@ class SMOSImg(ImageBase):
 
 
         # filter with the flags (this excludes non-land points as well)
-        flag_mask = ~np.isin(return_img['Quality_Flag'], self.good_flags)
+        if self.read_flags is not None:
+            flag_mask = ~np.isin(return_img['Quality_Flag'], self.read_flags)
+        else:
+            flag_mask = np.full(return_img[parameters[0]].shape, False)
 
         for param, data in return_img.items():
             if issubclass(data.dtype.type, np.integer):
@@ -144,7 +144,7 @@ class SMOSImg(ImageBase):
             return_img[param] = data_masked.filled()
             return_img[param] = return_img[param].flatten()
 
-        if 'Quality_Flag' not in self.parameters:
+        if self.read_flags is not None and ('Quality_Flag' not in self.parameters):
             return_img.pop('Quality_Flag')
             return_metadata.pop('Quality_Flag')
 
@@ -152,7 +152,6 @@ class SMOSImg(ImageBase):
 
     def read_masked_data(self, **kwargs):
         raise NotImplementedError
-
 
     def read(self, timestamp=None):
         '''
@@ -169,7 +168,8 @@ class SMOSImg(ImageBase):
         try:
             return_img, return_metadata = self.read_img()
         except IOError:
-            warnings.warn('Error loading image for {}, generating empty image instead'.format(timestamp.date()))
+            warnings.warn('Error loading image for {}, '
+                          'generating empty image instead'.format(timestamp.date()))
             return_img, return_metadata = self.read_empty()
 
         if self.flatten:
@@ -188,7 +188,7 @@ class SMOSImg(ImageBase):
                          timestamp)
 
 
-    def write(self, data):
+    def write(self):
         raise NotImplementedError()
 
     def flush(self):
@@ -196,8 +196,6 @@ class SMOSImg(ImageBase):
 
     def close(self):
         pass
-
-
 
 class SMOSDs(MultiTemporalImageBase):
     """
@@ -215,23 +213,25 @@ class SMOSDs(MultiTemporalImageBase):
         Needed for some legacy code.
     grid : pygeogrids.CellGrid
         Grid that the image data is organised on
-    only_good : bool
-        Read only points that have the quality flag 0.
-        If this is False, also points with quality flag 1 are read,
-        flag 2 (missing data) will always be nan,.
+    read_flags : bool, optional (default: (0, 1))
+        Filter values to read based on the selected Quality Flags.
+        Values for locations that are not assigned any of the here passed flags
+        are replaces with NaN (by default only the missing-data, i.e. flag=2,
+        locations are filtered out).
     """
 
     def __init__(self, data_path, parameters='Soil_Moisture', flatten=False,
-                 grid=None, only_good=False):
+                 grid=None, filename_templ=None, read_flags=(0,1)):
 
         ioclass_kws = {'parameters': parameters,
                        'flatten': flatten,
                        'grid': grid,
-                       'only_good': only_good}
+                       'read_flags': read_flags}
 
         sub_path = ['%Y']
 
-        filename_templ = "SM_RE06_MIR_CDF3S*_{datetime}T000000_{datetime}T235959_105_*_8.DBL.nc"
+        if filename_templ is None:
+            filename_templ = "SM_RE06_MIR_CDF3S*_{datetime}T000000_{datetime}T235959_105_*_8.DBL.nc"
 
         super(SMOSDs, self).__init__(data_path, ioclass=SMOSImg,
                                      fname_templ=filename_templ,
@@ -266,9 +266,9 @@ class SMOSDs(MultiTemporalImageBase):
         return timestamps for daterange,
         Parameters
         ----------
-        start_date: datetime
+        start_date: datetime.datetime
             start of date range
-        end_date: datetime
+        end_date: datetime.datetime
             end of date range
         Returns
         -------
@@ -289,7 +289,7 @@ class SMOSDs(MultiTemporalImageBase):
 
 class SMOSTs(GriddedNcOrthoMultiTs):
     def __init__(self, ts_path, grid_path=None, **kwargs):
-        '''
+        """
         Class for reading SMOS time series after reshuffling images
 
         Parameters
@@ -320,10 +320,11 @@ class SMOSTs(GriddedNcOrthoMultiTs):
                         if false dates will not be read automatically but only on specific
                         request useable for bulk reading because currently the netCDF
                         num2date routine is very slow for big datasets
-        '''
+        """
 
         if grid_path is None:
             grid_path = os.path.join(ts_path, "grid.nc")
 
         grid = load_grid(grid_path)
         super(SMOSTs, self).__init__(ts_path, grid, **kwargs)
+
