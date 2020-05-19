@@ -29,9 +29,9 @@ commands:
 
 .. code-block:: shell
 
-  conda create -q -n smos -c conda-forge numpy netcdf4 pyresample scipy pandas
-  source activate smos
-  pip install smos
+  $ conda create -q -n smos -c conda-forge numpy netcdf4 pyresample scipy pandas
+  $ source activate smos
+  $ pip install smos
 
 You can also install all needed (conda and pip) dependencies at once using the
 following commands after cloning this repository.  This is recommended for
@@ -39,12 +39,18 @@ developers of the package.
 
 .. code-block:: shell
 
-  git clone https://github.com/TUW-GEO/smos.git --recursive
-  cd smos
-  conda create -n smos python=2.7 # or any supported python version
-  source activate smos
-  conda update -f environment.yml
-  python setup.py develop
+  $ git clone https://github.com/TUW-GEO/smos.git --recursive
+  $ cd smos
+  $ conda create -n smos python=2.7 # or any supported python version
+  $ source activate smos
+  $ conda update -f environment.yml
+  $ python setup.py develop
+
+or you can use the installation script.
+
+.. code-block:: shell
+
+    $ bash install.sh -d --python 3.6 --name smos
 
 Supported Products
 ==================
