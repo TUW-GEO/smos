@@ -1,8 +1,8 @@
-Variable naming for different versions of GLDAS NOAH
+Variable naming for different versions of SMOS
 ====================================================
  
 This is a full list of all available variables in each image. These parameters
-can be passed to the reprupose routine to create time series.
+can be passed to the repurpose routine to create time series.
 
 * L3 SMOS IC
 
