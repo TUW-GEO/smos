@@ -50,4 +50,4 @@ MANIFEST
 .venv*/
 
 #other
-local_scripts/*
+*/local_scripts/*
