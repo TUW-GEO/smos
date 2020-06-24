@@ -1,10 +1,12 @@
-# -*- coding: utf-8 -*-
+version: 2
 
-"""
-Module description
-"""
-# TODO:
-#   (+) 
-#---------
-# NOTES:
-#   - 
+sphinx:
+  configuration: docs/conf.py
+
+formats:
+  - pdf
+
+python:
+  version: 3.7
+  install:
+    - requirements: docs/requirements.txt
