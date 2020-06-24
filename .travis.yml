@@ -27,7 +27,7 @@ install:
   - conda info -a
 
   - bash install.sh -d --python ${TRAVIS_PYTHON_VERSION} --name smos
-  - source activate smos
+  - conda activate smos
 
   - conda list
   - pip list
@@ -40,3 +40,17 @@ after_success:
   # report coverage results to coveralls.io
   - pip install coveralls
   - coveralls
+deploy:
+  provider: pypi
+  # better than hiding the token would be to encrypt it with travis...
+  username: __token__
+  password: $PYPI_TOKEN
+  skip_existing: true
+  on:
+    repo: TUW-GEO/smos
+    tags: true
+after_deploy:
+  # as in docs
+  - conda create -q -n smos_deploy -c conda-forgenumpy netcdf4 pyresample scipy pandas
+  - conda activate smos_deploy
+  - pip install smos_deploy
