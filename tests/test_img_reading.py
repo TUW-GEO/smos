@@ -25,21 +25,19 @@
 Tests for reading the image datasets.
 '''
 
-#TODO:
-# add tests for descending image
-
-from smos.smos_ic.interface import SMOSImg, SMOSDs
+from smos.smos_ic import SMOSImg, SMOSDs
 import os
 import numpy as np
 import numpy.testing as nptest
 from datetime import datetime
+
 
 def test_SMOS_IC_Img():
     fname = os.path.join(os.path.dirname(__file__),
                          'smos-test-data', 'L3_SMOS_IC', 'ASC', '2018',
                          'SM_RE06_MIR_CDF3SA_20180101T000000_20180101T235959_105_001_8.DBL.nc')
     ds = SMOSImg(fname, parameters=['Soil_Moisture'], read_flags=None)
-    image = ds.read()
+    image = ds.read(datetime(2018, 1, 1))
     assert list(image.data.keys()) == ['Soil_Moisture']
     assert image.data['Soil_Moisture'].shape == (584, 1388)
     # test for correct masking --> point without data
@@ -51,14 +49,13 @@ def test_SMOS_IC_Img():
     nptest.assert_almost_equal(image.lat[355, 458], -12.55398, 4)
     nptest.assert_almost_equal(image.data['Soil_Moisture'][355, 458], 0.198517, 4)
 
-
     metadata_keys = [u'_FillValue',
                      u'long_name',
                      u'units',
                      'image_missing']
 
     for key in image.metadata['Soil_Moisture'].keys():
-        assert(key in metadata_keys)
+        assert (key in metadata_keys)
 
 
 def test_SMOS_IC_Img_flatten():
@@ -66,18 +63,17 @@ def test_SMOS_IC_Img_flatten():
                          'smos-test-data', 'L3_SMOS_IC', 'ASC', '2018',
                          'SM_RE06_MIR_CDF3SA_20180101T000000_20180101T235959_105_001_8.DBL.nc')
     ds = SMOSImg(fname, parameters=['Soil_Moisture'], flatten=True)
-    image = ds.read()
+    image = ds.read(datetime(2018, 1, 1))
     assert list(image.data.keys()) == ['Soil_Moisture']
     assert image.data['Soil_Moisture'].shape == (584 * 1388,)
     # test for correct masking --> point without data
-    nptest.assert_almost_equal(image.lat[(584 - 426)*1388 + 1237], -27.17044, 4)
-    nptest.assert_almost_equal(image.lon[(584 - 426)*1388 + 1237], 140.9654, 4)
-    assert np.isnan(image.data['Soil_Moisture'][425*1388 + 1237])
+    nptest.assert_almost_equal(image.lat[(584 - 426) * 1388 + 1237], -27.17044, 4)
+    nptest.assert_almost_equal(image.lon[(584 - 426) * 1388 + 1237], 140.9654, 4)
+    assert np.isnan(image.data['Soil_Moisture'][425 * 1388 + 1237])
     # test for correct masking --> point with data
-    nptest.assert_almost_equal(image.lon[(584 - 356)*1388 + 458], -61.08069, 4)
-    nptest.assert_almost_equal(image.lat[(584 - 356)*1388 + 458], -12.55398, 4)
-    nptest.assert_almost_equal(image.data['Soil_Moisture'][(584 - 356)*1388 + 458], 0.198517, 4)
-
+    nptest.assert_almost_equal(image.lon[(584 - 356) * 1388 + 458], -61.08069, 4)
+    nptest.assert_almost_equal(image.lat[(584 - 356) * 1388 + 458], -12.55398, 4)
+    nptest.assert_almost_equal(image.data['Soil_Moisture'][(584 - 356) * 1388 + 458], 0.198517, 4)
 
     metadata_keys = [u'_FillValue',
                      u'long_name',
@@ -91,8 +87,8 @@ def test_SMOS_IC_Img_flatten():
 def test_SMOS_IC_DS():
     fname = os.path.join(os.path.dirname(__file__),
                          'smos-test-data', 'L3_SMOS_IC', 'ASC')
-    ds = SMOSDs(fname, parameters=['Soil_Moisture'], read_flags=(0,1,2))
-    image = ds.read(timestamp=datetime(2018,1,1))
+    ds = SMOSDs(fname, parameters=['Soil_Moisture'], read_flags=(0, 1, 2))
+    image = ds.read(timestamp=datetime(2018, 1, 1))
     assert list(image.data.keys()) == ['Soil_Moisture']
     assert image.data['Soil_Moisture'].shape == (584, 1388)
     # test for correct masking --> point without data
@@ -104,21 +100,19 @@ def test_SMOS_IC_DS():
     nptest.assert_almost_equal(image.lat[355, 458], -12.55398, 4)
     nptest.assert_almost_equal(image.data['Soil_Moisture'][355, 458], 0.198517, 4)
 
-
     metadata_keys = [u'_FillValue',
                      u'long_name',
                      u'units',
                      'image_missing']
 
     for key in image.metadata['Soil_Moisture'].keys():
-        assert(key in metadata_keys)
+        assert (key in metadata_keys)
 
 
 def test_SMOS_IC_ts_for_daterange():
     fname = os.path.join(os.path.dirname(__file__),
                          'smos-test-data', 'L3_SMOS_IC', 'ASC', '2018')
-    ds = SMOSDs(fname, parameters=['Soil_Moisture'], read_flags=(0,1), flatten=True)
-
+    ds = SMOSDs(fname, parameters=['Soil_Moisture'], read_flags=(0, 1), flatten=True)
 
     tstamps = ds.tstamps_for_daterange(start_date=datetime(2018, 1, 1),
                                        end_date=datetime(2018, 1, 5))
@@ -128,4 +122,3 @@ def test_SMOS_IC_ts_for_daterange():
                        datetime(2018, 1, 3),
                        datetime(2018, 1, 4),
                        datetime(2018, 1, 5)]
-

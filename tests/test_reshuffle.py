@@ -31,24 +31,55 @@ from smos.smos_ic.interface import SMOSTs
 import shutil
 
 
-def test_SMOS_IC_reshuffle():
-
+def test_SMOS_IC_reshuffle_global():
     inpath = os.path.join(os.path.dirname(os.path.abspath(__file__)),
                           "smos-test-data", "L3_SMOS_IC", "ASC")
     ts_path = tempfile.mkdtemp()
-    startdate = '2018-01-01' # 1 day is missing, should be filled with nans
+    startdate = '2018-01-01'  # 1 day is missing, should be filled with nans
     enddate = '2018-01-03'
-    parameters = ["--parameters","Soil_Moisture"]
+    parameters = ["--parameters", "Soil_Moisture", "Quality_Flag"]
 
     args = [inpath, ts_path, startdate, enddate] + \
            parameters + ['--only_good', False]
 
     main(args)
     assert len(glob.glob(os.path.join(ts_path, "*.nc"))) == 2449
-    ds = SMOSTs(ts_path, ioclass_kws={'read_bulk':True})
-    ts = ds.read(-61.08069, -12.55398) # this is the same point as in image test
-    sm_values_should = np.array([0.198517, np.nan,  np.nan], dtype=np.float32)
+    ds = SMOSTs(ts_path, ioclass_kws={'read_bulk': True}, drop_missing=False)
+    ts = ds.read(-61.08069, -12.55398)  # this is the same point as in image test
+    assert ts['Quality_Flag'].dtype == np.float # because we dont drop missing
+
+    sm_values_should = np.array([0.198517, np.nan, np.nan], dtype=np.float32)
     nptest.assert_allclose(ts['Soil_Moisture'].values, sm_values_should, 4)
 
     ds.close()
     shutil.rmtree(ts_path)
+
+
+def test_SMOS_IC_reshuffle_subset():
+    inpath = os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                          "smos-test-data", "L3_SMOS_IC", "ASC")
+    ts_path = tempfile.mkdtemp()
+    startdate = '2018-01-01'  # 1 day is missing, should be filled with nans
+    enddate = '2018-01-03'
+    bbox = ['-11', '34', '43', '71']
+    args = [inpath, ts_path, startdate, enddate] + \
+           ['--only_good', 'True'] + ['--bbox', *bbox]
+
+    main(args)
+    assert len(glob.glob(os.path.join(ts_path, "*.nc"))) == 109
+    ds = SMOSTs(ts_path, ioclass_kws={'read_bulk': True})
+
+    ts = ds.read(20.36023, 47.682177)  # this is the same point as in image subset test
+    nptest.assert_almost_equal(ts.loc['2018-01-01', 'Soil_Moisture'], 0.31218335)
+    assert ts['Quality_Flag'].dtype == np.int
+    assert ts['Soil_Moisture'].dtype == np.float
+
+    ts = ds.read(-61.08069, -12.55398)  # this is the same point as in image test
+    assert np.isnan(ts.loc['2018-01-01', 'Soil_Moisture'])
+    assert ts.loc['2018-01-01', 'Quality_Flag'] == 2
+
+    ds.close()
+    shutil.rmtree(ts_path)
+
+if __name__ == '__main__':
+    test_SMOS_IC_reshuffle_global()

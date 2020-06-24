@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # The MIT License (MIT)
 #
-# Copyright (c) 2019,TU Wien
+# Copyright (c) 2020,TU Wien
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -21,108 +21,57 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-'''
-Tests for reading the image datasets.
-'''
+"""
+Tests for storing subset images.
+"""
 
-from smos.smos_ic import SMOSImg, SMOSDs
+from smos.smos_ic import SMOSDs
 import os
 import numpy as np
 import numpy.testing as nptest
 from datetime import datetime
-
-def test_SMOS_IC_Img():
-    fname = os.path.join(os.path.dirname(__file__),
-                         'smos-test-data', 'L3_SMOS_IC', 'ASC', '2018',
-                         'SM_RE06_MIR_CDF3SA_20180101T000000_20180101T235959_105_001_8.DBL.nc')
-    ds = SMOSImg(fname, parameters=['Soil_Moisture'], read_flags=None)
-    image = ds.read()
-    assert list(image.data.keys()) == ['Soil_Moisture']
-    assert image.data['Soil_Moisture'].shape == (584, 1388)
-    # test for correct masking --> point without data
-    nptest.assert_almost_equal(image.lon[425, 1237], 140.9654, 4)
-    nptest.assert_almost_equal(image.lat[425, 1237], -27.17044, 4)
-    assert np.isnan(image.data['Soil_Moisture'][425, 1237])
-    # test for correct masking --> point with data
-    nptest.assert_almost_equal(image.lon[355, 458], -61.08069, 4)
-    nptest.assert_almost_equal(image.lat[355, 458], -12.55398, 4)
-    nptest.assert_almost_equal(image.data['Soil_Moisture'][355, 458], 0.198517, 4)
+from tempfile import mkdtemp
+from smos.grid import EASE25CellGrid
+import pytest
 
 
-    metadata_keys = [u'_FillValue',
-                     u'long_name',
-                     u'units',
-                     'image_missing']
+@pytest.mark.parametrize("stackfile,files", [(None, 2), ("stack.nc", 1)])
+def test_SMOS_IC_Ds_subset(stackfile, files):
+    # test reading and storing a spatial subset (as stack/single img)
+    dsname = os.path.join(os.path.dirname(__file__),
+                          'smos-test-data', 'L3_SMOS_IC', 'ASC')
+    subgrid = EASE25CellGrid(bbox=(-11., 34., 43., 71.))
+    params = ['Soil_Moisture', 'Quality_Flag']
 
-    for key in image.metadata['Soil_Moisture'].keys():
-        assert(key in metadata_keys)
+    ds = SMOSDs(dsname, parameters=params, grid=subgrid, read_flags=(0, 1))
+    image = ds.read(datetime(2018, 1, 1))
 
+    # europe subset
+    assert image.data['Soil_Moisture'].shape == (113, 208)
+    assert list(image.data.keys()) == params
 
-def test_SMOS_IC_Img_flatten():
-    fname = os.path.join(os.path.dirname(__file__),
-                         'smos-test-data', 'L3_SMOS_IC', 'ASC', '2018',
-                         'SM_RE06_MIR_CDF3SA_20180101T000000_20180101T235959_105_001_8.DBL.nc')
-    ds = SMOSImg(fname, parameters=['Soil_Moisture'], flatten=True)
-    image = ds.read()
-    assert list(image.data.keys()) == ['Soil_Moisture']
-    assert image.data['Soil_Moisture'].shape == (584 * 1388,)
-    # test for correct masking --> point without data
-    nptest.assert_almost_equal(image.lat[(584 - 426)*1388 + 1237], -27.17044, 4)
-    nptest.assert_almost_equal(image.lon[(584 - 426)*1388 + 1237], 140.9654, 4)
-    assert np.isnan(image.data['Soil_Moisture'][425*1388 + 1237])
-    # test for correct masking --> point with data
-    nptest.assert_almost_equal(image.lon[(584 - 356)*1388 + 458], -61.08069, 4)
-    nptest.assert_almost_equal(image.lat[(584 - 356)*1388 + 458], -12.55398, 4)
-    nptest.assert_almost_equal(image.data['Soil_Moisture'][(584 - 356)*1388 + 458], 0.198517, 4)
+    assert np.nanmax(np.nanmax(image.data['Quality_Flag'])) == 1
+    assert np.nanmax(np.nanmin(image.data['Quality_Flag'])) == 0
 
+    # index in global file [508, 772]
+    nptest.assert_almost_equal(image.data['Soil_Moisture'][60, 120], 0.31218, decimal=4)
+    nptest.assert_almost_equal(image.lon[60, 120], 20.36023, decimal=4)
+    nptest.assert_almost_equal(image.lat[60, 120], 47.682177, decimal=4)
 
-    metadata_keys = [u'_FillValue',
-                     u'long_name',
-                     u'units',
-                     'image_missing']
+    nptest.assert_almost_equal(image.lon[25, 130], 22.95389, 4)
+    nptest.assert_almost_equal(image.lat[25, 130], 59.1181825, 4)
+    assert np.isnan(image.data['Soil_Moisture'][25, 130])
+    np.ma.is_masked(image.data['Quality_Flag'][25, 130])
 
-    assert sorted(metadata_keys) == sorted(
-        list(image.metadata['Soil_Moisture'].keys()))
+    outdir = mkdtemp()
+    os.makedirs(outdir, exist_ok=True)
+    ds.write_multiple(root_path=outdir, start_date=datetime(2018, 1, 1),
+                      end_date=datetime(2018, 1, 3), stackfile=stackfile)
 
-
-def test_SMOS_IC_DS():
-    fname = os.path.join(os.path.dirname(__file__),
-                         'smos-test-data', 'L3_SMOS_IC', 'ASC')
-    ds = SMOSDs(fname, parameters=['Soil_Moisture'], read_flags=(0,1,2))
-    image = ds.read(timestamp=datetime(2018,1,1))
-    assert list(image.data.keys()) == ['Soil_Moisture']
-    assert image.data['Soil_Moisture'].shape == (584, 1388)
-    # test for correct masking --> point without data
-    nptest.assert_almost_equal(image.lon[425, 1237], 140.9654, 4)
-    nptest.assert_almost_equal(image.lat[425, 1237], -27.17044, 4)
-    assert np.isnan(image.data['Soil_Moisture'][425, 1237])
-    # test for correct masking --> point with data
-    nptest.assert_almost_equal(image.lon[355, 458], -61.08069, 4)
-    nptest.assert_almost_equal(image.lat[355, 458], -12.55398, 4)
-    nptest.assert_almost_equal(image.data['Soil_Moisture'][355, 458], 0.198517, 4)
-
-
-    metadata_keys = [u'_FillValue',
-                     u'long_name',
-                     u'units',
-                     'image_missing']
-
-    for key in image.metadata['Soil_Moisture'].keys():
-        assert(key in metadata_keys)
-
-
-def test_SMOS_IC_ts_for_daterange():
-    fname = os.path.join(os.path.dirname(__file__),
-                         'smos-test-data', 'L3_SMOS_IC', 'ASC', '2018')
-    ds = SMOSDs(fname, parameters=['Soil_Moisture'], read_flags=(0,1), flatten=True)
-
-
-    tstamps = ds.tstamps_for_daterange(start_date=datetime(2018, 1, 1),
-                                       end_date=datetime(2018, 1, 5))
-    assert len(tstamps) == 5
-    assert tstamps == [datetime(2018, 1, 1),
-                       datetime(2018, 1, 2),
-                       datetime(2018, 1, 3),
-                       datetime(2018, 1, 4),
-                       datetime(2018, 1, 5)]
-
+    if stackfile is None:
+        assert os.path.isdir(os.path.join(outdir, '2018'))
+        assert len(os.listdir(os.path.join(outdir, '2018'))) == 2  # Jan 2nd has no data
+    else:
+        ds.write_multiple(root_path=outdir, start_date=datetime(2018, 1, 1),
+                          end_date=datetime(2018, 1, 3), stackfile=stackfile)
+        assert len(os.listdir(outdir)) == 1  # 1 stack
