@@ -27,7 +27,7 @@ install:
   - conda info -a
 
   - bash install.sh -d --python ${TRAVIS_PYTHON_VERSION} --name smos
-  - conda activate smos
+  - source activate smos
 
   - conda list
   - pip list
@@ -52,5 +52,5 @@ deploy:
 after_deploy:
   # as in docs
   - conda create -q -n smos_deploy -c conda-forgenumpy netcdf4 pyresample scipy pandas
-  - conda activate smos_deploy
+  - source activate smos_deploy
   - pip install smos_deploy
