@@ -26,7 +26,7 @@ will create a new netcdf file with the content of the current image at a selecte
 
    img.read(datetime(2018,1,1))
 
-   img.write(r"C:\Temp\subset_image.nc")
+   img.write(r"C:\Temp\write\subset_image.nc")
 
 Finally, you can also write down multiple files using the write function from
 ``SMOSDs``. You can either create single files per time stamp (like the original data is)
@@ -52,9 +52,9 @@ also skipped when writing the subset).
                 read_flags=(0,), grid=subgrid_eu)
 
    # write data as single files
-   ds.write_multiple(r'C:\Temp\test', start_date=datetime(2018,1,1), end_date=datetime(2018,1,3),
+   ds.write_multiple(r'C:\Temp\write\test', start_date=datetime(2018,1,1), end_date=datetime(2018,1,3),
                      stackfile=None)
 
    # write data as a stack
-   ds.write_multiple(r'C:\Temp\test', stackfile='stack.nc', start_date=datetime(2018,1,1),
+   ds.write_multiple(r'C:\Temp\write\test', stackfile='stack.nc', start_date=datetime(2018,1,1),
                      end_date=datetime(2018,1,3))
