@@ -14,6 +14,9 @@ SMOS
 .. image:: https://readthedocs.org/projects/smos/badge/?version=latest
    :target: http://smos.readthedocs.org/
 
+.. image:: https://zenodo.org/badge/167011732.svg
+   :target: https://zenodo.org/badge/latestdoi/167011732
+   
 
 SMOS (Soil Moisture and Ocean Salinity) data readers and time series converter.
 
