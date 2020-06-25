@@ -2,10 +2,19 @@
 Changelog
 =========
 
+Unreleased
+==========
+-
+
 Version 0.2
 ===========
+
+- Add option read data for spatial subsets
+- Add function to write images/stacks down
+- Add function to reshuffle by bounding box
+- Update docs and travis, automatic pypi deployment
+- Update tests
 - By default also reshuffle if Scene_Flag is 2
-- Update documentation
 - Switch to pyscaffold 3 package structure
 - Drop support for python 2
 

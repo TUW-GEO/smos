@@ -29,12 +29,13 @@ from pygeobase.io_base import ImageBase, MultiTemporalImageBase
 from pygeobase.object_base import Image
 from pynetcf.time_series import GriddedNcOrthoMultiTs
 from datetime import timedelta, datetime
-from netCDF4 import Dataset, date2num
+from netCDF4 import Dataset, date2num, num2date
 from pygeogrids.netcdf import load_grid
 from smos.grid import EASE25CellGrid
 from smos.smos_ic import dist_name as subdist_name
 from smos import dist_name, __version__
 from collections import OrderedDict
+import pandas as pd
 
 
 class SMOSImg(ImageBase):
@@ -164,8 +165,6 @@ class SMOSImg(ImageBase):
             flag_mask = np.full(param_img[parameters[0]].shape, False)
 
         for param, data in param_img.items():
-            # if issubclass(data.dtype.type, np.integer):
-            #     data = data.astype(np.float32)
 
             param_img[param].mask = (data.mask | flag_mask)
 
@@ -173,7 +172,6 @@ class SMOSImg(ImageBase):
                 if issubclass(data.dtype.type, np.floating):
                     param_img[param] = data.filled(fill_value=self.float_fillval)
 
-            # return_img[param] = data_masked.filled()
             param_img[param] = param_img[param].flatten()[self.grid.activegpis]
 
         if ('Quality_Flag' in param_img.keys()) and \
@@ -257,16 +255,17 @@ class SMOSImg(ImageBase):
         units = 'Days since 2000-01-01 00:00:00'
 
         if mode == 'w':
-            ds.createDimension('timstamp', None)  # stack dim
+            ds.createDimension('timestamp', None)  # stack dim
             ds.createDimension('lat', len(lats))
             ds.createDimension('lon', len(lons))
 
-            ds.createVariable('timstamp', datatype=np.double, dimensions=('timstamp',),
-                              zlib=True, chunksizes=None)  # this is not the obs time, but a time stamp
+            # this is not the obs time, but an image time stamp
+            ds.createVariable('timestamp', datatype=np.double, dimensions=('timestamp',),
+                              zlib=True, chunksizes=None)
             ds.createVariable('lat', datatype='float64', dimensions=('lat',), zlib=True)
             ds.createVariable('lon', datatype='float64', dimensions=('lon',), zlib=True)
 
-            ds.variables['timstamp'].setncatts({'long_name': 'timstamp',
+            ds.variables['timestamp'].setncatts({'long_name': 'timestamp',
                                                 'units': units})
             ds.variables['lat'].setncatts({'long_name': 'latitude', 'units': 'Degrees_North',
                                            'valid_range': (-90, 90)})
@@ -275,7 +274,7 @@ class SMOSImg(ImageBase):
 
             ds.variables['lon'][:] = lons
             ds.variables['lat'][:] = lats
-            ds.variables['timstamp'][:] = np.array([])
+            ds.variables['timestamp'][:] = np.array([])
 
             this_global_attrs = \
                 OrderedDict([('subset_img_creation_time', str(datetime.now())),
@@ -287,13 +286,13 @@ class SMOSImg(ImageBase):
             glob_attrs.update(this_global_attrs)
             ds.setncatts(glob_attrs)
 
-        idx = ds.variables['timstamp'].shape[0]
-        ds.variables['timstamp'][idx] = date2num(self.img.timestamp, units=units)
+        idx = ds.variables['timestamp'].shape[0]
+        ds.variables['timestamp'][idx] = date2num(self.img.timestamp, units=units)
 
         for var, vardata in self.img.data.items():
 
             if var not in ds.variables.keys():
-                ds.createVariable(var, vardata.dtype, dimensions=('timstamp', 'lat', 'lon'),
+                ds.createVariable(var, vardata.dtype, dimensions=('timestamp', 'lat', 'lon'),
                                   zlib=True, complevel=6)
                 ds.variables[var].setncatts(self.img.metadata[var])
 
@@ -447,7 +446,12 @@ class SMOSDs(MultiTemporalImageBase):
 
 
 class SMOSTs(GriddedNcOrthoMultiTs):
-    def __init__(self, ts_path, grid_path=None, drop_missing=True, **kwargs):
+
+    _t0_vars = {'sec': 'UTC_Seconds', 'days': 'Days'}
+    _t0_unit = 'days since 2000-01-01'
+
+    def __init__(self, ts_path, grid_path=None, index_add_time=False,
+                 drop_missing=True, **kwargs):
         """
         Class for reading SMOS time series after reshuffling images.
         Missing images are represented in time series as lines where all
@@ -461,6 +465,9 @@ class SMOSTs(GriddedNcOrthoMultiTs):
             Path to grid file, that is used to organize the location of time
             series to read. If None is passed, grid.nc is searched for in the
             ts_path.
+        index_add_time : bool, optional (default: False)
+            Add overpass time stamps to the data frame index. This needs the
+            'Days' and 'UTC_Seconds' variable available in the time series files.
         drop_missing : bool, optional (default: True)
             Drop Lines in TS where ALL variables are missing.
 
@@ -494,6 +501,36 @@ class SMOSTs(GriddedNcOrthoMultiTs):
         grid = load_grid(grid_path)
         super(SMOSTs, self).__init__(ts_path, grid, **kwargs)
 
+        self.index_add_time = index_add_time
+        if (self.parameters is not None) and self.index_add_time:
+            for v in self._t0_vars.values():
+                self.parameters.append(v)
+
+    def _to_datetime(self, df:pd.DataFrame) -> pd.DataFrame:
+        # convert Days and UTC_Seconds to actual datetimes
+        units = self._t0_unit
+
+        df['_date'] = df.index.values
+
+        if (self._t0_vars['days'] not in df.columns) or \
+            (self._t0_vars['sec'] not in df.columns):
+            raise KeyError(f"Could not find {self._t0_vars['days']} or {self._t0_vars['sec']} "
+                           f"in reshuffled data.")
+
+
+        # days + (seconds / seconds per day)
+        num = df[self._t0_vars['days']].dropna() + (df[self._t0_vars['sec']].dropna() / 86400.)
+        if len(num) == 0:
+            df.loc[num.index, '_datetime_UTC'] = []
+        else:
+            df.loc[num.index, '_datetime_UTC'] = \
+                pd.DatetimeIndex(num2date(num.values, units=units,
+                        calendar='standard', only_use_cftime_datetimes=False))
+
+        df = df.set_index('_datetime_UTC')
+        df = df[df.index.notnull()]
+        return df
+
     def read(self, *args, **kwargs):
         """
         Read time series by grid point index, or by lonlat. Convert columns to
@@ -524,5 +561,8 @@ class SMOSTs(GriddedNcOrthoMultiTs):
             if (not np.isnan(ts[col]).any()) and \
                     (np.all(np.mod(ts[col].values, 1) == 0.)):
                 ts[col] = ts[col].astype(int)
+
+        if self.index_add_time:
+            ts = self._to_datetime(ts)
 
         return ts

@@ -33,8 +33,9 @@ class EASE25CellGrid(CellGrid):
 
         self.bbox = bbox
         if self.bbox:
-            sgpis = globgrid.get_bbox_grid_points(latmin=self.bbox[1], latmax=self.bbox[3],
-                                                  lonmin=self.bbox[0], lonmax=self.bbox[2])
+            sgpis = globgrid.get_bbox_grid_points(
+                latmin=self.bbox[1], latmax=self.bbox[3],
+                lonmin=self.bbox[0], lonmax=self.bbox[2])
 
         self.cellsize = 5.
 
@@ -50,6 +51,7 @@ class EASE25CellGrid(CellGrid):
                              len(np.unique(self.activearrlat)))
 
     def cut(self) -> CellGrid:
+        # create a new grid from the active subset
         return BasicGrid(lon=self.activearrlon, lat=self.activearrlat,
                          gpis=self.activegpis, subset=None,
                          shape=self.subset_shape).to_cell_grid(self.cellsize)

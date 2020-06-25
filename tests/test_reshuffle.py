@@ -29,6 +29,7 @@ from smos.smos_ic.reshuffle import main
 import glob
 from smos.smos_ic.interface import SMOSTs
 import shutil
+from datetime import timedelta
 
 
 def test_SMOS_IC_reshuffle_global():
@@ -67,19 +68,19 @@ def test_SMOS_IC_reshuffle_subset():
 
     main(args)
     assert len(glob.glob(os.path.join(ts_path, "*.nc"))) == 109
-    ds = SMOSTs(ts_path, ioclass_kws={'read_bulk': True})
+    ds = SMOSTs(ts_path, ioclass_kws={'read_bulk': True}, index_add_time=True)
 
     ts = ds.read(20.36023, 47.682177)  # this is the same point as in image subset test
-    nptest.assert_almost_equal(ts.loc['2018-01-01', 'Soil_Moisture'], 0.31218335)
+    assert ts.index[0] == ts.iloc[0]['_date'] + timedelta(seconds=int(ts.iloc[0]['UTC_Seconds']))
+    timestamp0 = ts.index[0]
+    nptest.assert_almost_equal(ts.loc[timestamp0, 'Soil_Moisture'], 0.31218335)
     assert ts['Quality_Flag'].dtype == np.int
     assert ts['Soil_Moisture'].dtype == np.float
 
+    ds = SMOSTs(ts_path, ioclass_kws={'read_bulk': True}, index_add_time=False)
     ts = ds.read(-61.08069, -12.55398)  # this is the same point as in image test
     assert np.isnan(ts.loc['2018-01-01', 'Soil_Moisture'])
     assert ts.loc['2018-01-01', 'Quality_Flag'] == 2
 
     ds.close()
     shutil.rmtree(ts_path)
-
-if __name__ == '__main__':
-    test_SMOS_IC_reshuffle_global()

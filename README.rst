@@ -20,18 +20,28 @@ SMOS (Soil Moisture and Ocean Salinity) data readers and time series converter.
 Works great in combination with `pytesmo <https://github.com/TUW-GEO/pytesmo>`_.
 
 
+Documentation & Software Citation
+=================================
+To see the latest full documentation click on the docs badge at the top.
+
+To cite this package follow the Zenodo badge at the top and export the citation there.
+Be aware that this badge links to the latest package version. Additional information
+on DOI versioning can be found here: http://help.zenodo.org/#versioning
+
 Installation
 ============
+
+Before installing this package via pip, please install the necessary
+conda dependencies:
+
+.. code-block:: shell
+
+  $ conda install -c conda-forge netcdf4 pyresample
+  $ pip install smos
 
 Setup of a complete environment with `conda
 <http://conda.pydata.org/miniconda.html>`_ can be performed using the following
 commands:
-
-.. code-block:: shell
-
-  $ conda create -q -n smos -c conda-forge numpy netcdf4 pyresample scipy pandas
-  $ source activate smos
-  $ pip install smos
 
 You can also install all needed (conda and pip) dependencies at once using the
 following commands after cloning this repository.  This is recommended for
@@ -41,12 +51,13 @@ developers of the package.
 
   $ git clone https://github.com/TUW-GEO/smos.git --recursive
   $ cd smos
-  $ conda create -n smos python=2.7 # or any supported python version
+  $ conda create -n smos python=3.6 # or any supported python version
   $ source activate smos
   $ conda update -f environment.yml
   $ python setup.py develop
 
-or you can use the installation script.
+or you can use the installation script with/without the develop flag (``-d``),
+which will call ``python setup.py develop``, resp ``python setup.py install``.
 
 .. code-block:: shell
 
@@ -55,12 +66,10 @@ or you can use the installation script.
 Supported Products
 ==================
 
+Currently the following products are supported, additional products can be
+added.
+
 - `SMOS IC <https://www.catds.fr/Products/Available-products-from-CEC-SM/SMOS-IC>`_: SMOS INRA-CESBIO (SMOS-IC) 25km
-
-
-Software Citation
-=================
-
 
 Contribute
 ==========
