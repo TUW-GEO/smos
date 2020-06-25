@@ -1,5 +1,6 @@
 .. include:: ../README.rst
 .. include:: reading.rst
+.. include:: write.rst
 .. include:: varnames.rst
 .. include:: img2ts.rst
 
@@ -10,6 +11,7 @@ Contents
    :maxdepth: 2
 
    Data reading <reading>
+   Data writing <write>
    Variable names <varnames>
    Conversion to time series <img2ts>
    License <license>

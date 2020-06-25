@@ -7,7 +7,6 @@ dependencies:
 - netcdf4
 - scipy
 - pyresample
-- pytest
 - pip:
     - pygeobase
     - pynetcf
