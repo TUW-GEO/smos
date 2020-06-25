@@ -35,16 +35,12 @@ Installation
 ============
 
 Before installing this package via pip, please install the necessary
-conda dependencies:
+`conda <http://conda.pydata.org/miniconda.html>`_ dependencies:
 
 .. code-block:: shell
 
   $ conda install -c conda-forge netcdf4 pyresample
   $ pip install smos
-
-Setup of a complete environment with `conda
-<http://conda.pydata.org/miniconda.html>`_ can be performed using the following
-commands:
 
 You can also install all needed (conda and pip) dependencies at once using the
 following commands after cloning this repository.  This is recommended for
@@ -60,7 +56,7 @@ developers of the package.
   $ python setup.py develop
 
 or you can use the installation script with/without the develop flag (``-d``),
-which will call ``python setup.py develop``, resp ``python setup.py install``.
+which will call ``python setup.py develop``, respectively ``python setup.py install``.
 
 .. code-block:: shell
 
