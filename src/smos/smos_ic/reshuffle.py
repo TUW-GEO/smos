@@ -33,7 +33,7 @@ from datetime import datetime
 
 from repurpose.img2ts import Img2Ts
 from smos.smos_ic.interface import SMOSImg, SMOSDs
-from smos.smos_ic.grid import EASE25CellGrid
+from smos.grid import EASE25CellGrid
 from netCDF4 import Dataset
 
 
@@ -93,8 +93,7 @@ def str2bool(val):
 
 def reshuffle(input_root, outputpath,
               startdate, enddate,
-              parameters=None, ds_kwargs=None,
-              imgbuffer=50):
+              imgbuffer=200, **ds_kwargs):
     """
     Reshuffle method applied to SMOS image data.
 
@@ -108,43 +107,39 @@ def reshuffle(input_root, outputpath,
         Start date.
     enddate : datetime
         End date.
-    parameters: list
-        parameters to read and convert
-    ds_kwargs: dict
-        Kwargs that are passed to the image datastack class
     imgbuffer: int, optional
         How many images to read at once before writing time series.
+    ds_kwargs: dict
+        Kwargs that are passed to the image datastack class
     """
 
     ff, file_vars = firstfile(input_root)
     fp, ff = os.path.split(ff)
 
-    if parameters is None:
-        parameters = [p for p in file_vars if p not in ['lat', 'lon', 'time']]
-
-    if ds_kwargs is None:
-        ds_kwargs = {}
-
     if 'grid' not in ds_kwargs.keys():
-        ds_kwargs['grid'] = EASE25CellGrid()
+        ds_kwargs['grid'] = EASE25CellGrid(None)
+    if 'parameters' not in ds_kwargs.keys():
+        ds_kwargs['parameters'] = None
 
     # this is only for reading the ts_attrs
     input_dataset = SMOSImg(filename=os.path.join(fp, ff),
-        parameters=parameters, flatten=True, grid=ds_kwargs['grid'], read_flags=None)
-    data = input_dataset.read()
-    ts_attributes = data.metadata
+                            parameters=ds_kwargs['parameters'], flatten=True, read_flags=None,
+                            grid=ds_kwargs['grid'])
+    _, ts_attributes = input_dataset._read_img()
+    global_attr = input_dataset.get_global_attrs()
 
-    input_dataset = SMOSDs(input_root, parameters, flatten=True, **ds_kwargs)
+    if ds_kwargs['parameters'] is None:
+        ds_kwargs['parameters'] = input_dataset.parameters
+
+    input_dataset = SMOSDs(input_root, flatten=True, **ds_kwargs)
 
     if not os.path.exists(outputpath):
         os.makedirs(outputpath)
 
-    global_attr = {'product': 'SMOS_IC'}
-
     # get time series attributes from first day of data.
-
     reshuffler = Img2Ts(input_dataset=input_dataset, outputpath=outputpath,
-                        startdate=startdate, enddate=enddate, input_grid=ds_kwargs['grid'],
+                        startdate=startdate, enddate=enddate,
+                        input_grid=ds_kwargs['grid'].cut(),  # drop points that are not subset
                         imgbuffer=imgbuffer, cellsize_lat=5.0,
                         cellsize_lon=5.0, global_attr=global_attr, zlib=True,
                         unlim_chunksize=1000, ts_attributes=ts_attributes)
@@ -168,12 +163,12 @@ def parse_args(args):
     parser = argparse.ArgumentParser(
         description="Convert SMOS image data to time series format.")
     parser.add_argument("dataset_root",
-                        help='Root of local filesystem where the '
-                             'data is stored.')
+                        help="Root of local filesystem where the "
+                             "data is stored.")
 
     parser.add_argument("timeseries_root",
-                        help='Root of local filesystem where the timeseries '
-                             'should be stored.')
+                        help="Root of local filesystem where the timeseries "
+                             "should be stored.")
 
     parser.add_argument("start", type=mkdate,
                         help=("Startdate. Either in format YYYY-MM-DD or "
@@ -190,25 +185,31 @@ def parse_args(args):
                               "variables in the image file will be reshuffled. "
                               "Default: None"))
 
-    parser.add_argument("--only_good", type=bool, default=False,
-                        help=("Read only 0-flagged (GOOD) observations, "
+    parser.add_argument("--only_good", type=str2bool, default='False',
+                        help=("Use only observations with Quality_Flag 0 (GOOD), "
                               "if this is False, also 1-flagged (not recommended) "
                               "ones will be read and reshuffled, 2-flagged (missing)"
-                              "values are always excluded. Excluded values are replaced"
-                              "by NaNs. Default: False"))
+                              "values are always masked. Default: False"))
+
+    parser.add_argument("--bbox", type=float, default=None, nargs=4,
+                        help=("min_lon min_lat max_lon max_lat. "
+                              "Bounding Box (lower left and upper right corner) "
+                              "of area to reshuffle (WGS84). Default: None"))
 
     parser.add_argument("--imgbuffer", type=int, default=100,
                         help=("How many images to read at once. Bigger "
                               "numbers make the conversion faster but "
-                              "consume more memory. Default: 100"))
+                              "consume more memory. Default: 100."))
 
     args = parser.parse_args(args)
-    # set defaults that can not be handled by argparse
 
-    print("Converting data from {} to"
-          " {} into folder {}.".format(args.start.isoformat(),
-                                       args.end.isoformat(),
-                                       args.timeseries_root))
+    print(f"Converting SMOS IC data from {args.dataset_root} between "
+          f"{args.start.isoformat()} and {args.end.isoformat()} "
+          f"into folder {args.timeseries_root}. ")
+    print(f"Masking to include only recommended values is "
+          f"{'activated' if args.only_good else 'deactivated'}.")
+    if args.bbox is not None:
+        print(f"Bounding Box used: {str(args.bbox)}")
 
     return args
 
@@ -223,14 +224,19 @@ def main(args):
     """
     args = parse_args(args)
 
+    input_grid = EASE25CellGrid(bbox=tuple(args.bbox) if args.bbox is not None else None)
+
     flags = (0) if args.only_good else (0, 1)
+
+    ds_kwargs = {'read_flags': flags, 'grid': input_grid,
+                 'parameters': args.parameters}
+
     reshuffle(args.dataset_root,
               args.timeseries_root,
               args.start,
               args.end,
-              args.parameters,
-              ds_kwargs={'read_flags': flags},
-              imgbuffer=args.imgbuffer)
+              imgbuffer=args.imgbuffer,
+              **ds_kwargs)
 
 
 def run():

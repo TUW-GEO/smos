@@ -27,15 +27,16 @@ Tests for the EASE2 25km grid as used in the SMOS data
 '''
 
 import numpy.testing as nptest
-from smos.smos_ic.grid import EASE25CellGrid
+from smos.grid import EASE25CellGrid
 import numpy as np
+
 
 def test_EASE25CellGrid():
     grid = EASE25CellGrid()
     gpis, lons, lats, cells = grid.get_grid_points()
     nptest.assert_almost_equal(np.array([gpis[0], lons[0], lats[0]]),
                                np.array([0, -179.8703, -83.5171]), 4)
-    assert grid.activegpis.size == (584*1388)
+    assert grid.activegpis.size == (584 * 1388)
     assert grid.activegpis[316922] == 316922
     nptest.assert_almost_equal(grid.activearrlat[316922], -12.55398284007352, 5)
     nptest.assert_almost_equal(grid.activearrlon[316922], -61.08069164265129, 5)
