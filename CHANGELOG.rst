@@ -10,6 +10,7 @@ Version 0.2
 ===========
 
 - Add option read data for spatial subsets
+- Add option to add time stamps to time series index
 - Add function to write images/stacks down
 - Add function to reshuffle by bounding box
 - Update docs and travis, automatic pypi deployment
