@@ -53,4 +53,4 @@ after_deploy:
   # try install as in docs
   - conda create -q -n smos_deploy -c conda-forge netcdf4 pyresample
   - source activate smos_deploy
-  - pip install smos_deploy
+  - pip install smos
