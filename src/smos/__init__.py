@@ -9,15 +9,3 @@ except DistributionNotFound:
     __version__ = 'unknown'
 finally:
     del get_distribution, DistributionNotFound
-
-import os
-
-src_path = os.path.join(os.path.dirname(__file__), '..')
-
-tests_path = os.path.join(src_path, '..', 'tests')
-if not os.path.exists(tests_path):
-    tests_path = 'unknown'
-
-testdata_path = os.path.join(src_path, '..', 'tests', 'smos-test-data')
-if not os.path.exists(testdata_path):
-    testdata_path = 'unknown'

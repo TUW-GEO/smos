@@ -47,8 +47,8 @@ class EASE25CellGrid(CellGrid):
                                                                self.cellsize),
                                              shape=shape)
 
-        self.subset_shape = (len(np.unique(self.activearrlon)),
-                             len(np.unique(self.activearrlat)))
+        self.subset_shape = (len(np.unique(self.activearrlat)),
+                             len(np.unique(self.activearrlon)))
 
     def cut(self) -> CellGrid:
         # create a new grid from the active subset
