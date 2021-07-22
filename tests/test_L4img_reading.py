@@ -86,7 +86,7 @@ def test_SMOSL4_Img_flatten():
 
 def test_SMOSL4_DS():
     fname = os.path.join(os.path.dirname(__file__),
-                         'smos-test-data', 'L4_SMOS_RZSM', 'SCIE', '2018')
+                         'smos-test-data', 'L4_SMOS_RZSM', 'SCIE')
     ds = SMOSL4Ds(fname, parameters=['RZSM'])
     image = ds.read(timestamp=datetime(2018, 1, 1))
     assert list(image.data.keys()) == ['RZSM']
@@ -110,9 +110,7 @@ def test_SMOSL4_DS():
 
 
 def test_SMOSL4_ts_for_daterange():
-    fname = os.path.join(os.path.dirname(__file__),
-                         'smos-test-data', 'L4_SMOS_RZSM', 'SCIE', '2018')
-    ds = SMOSL4Ds(fname, parameters=['RZSM'], flatten=True)
+    ds = SMOSL4Ds('', parameters=['RZSM'], flatten=True)
 
     tstamps = ds.tstamps_for_daterange(start_date=datetime(2018, 1, 1),
                                        end_date=datetime(2018, 1, 5))
@@ -123,12 +121,12 @@ def test_SMOSL4_ts_for_daterange():
                        datetime(2018, 1, 4),
                        datetime(2018, 1, 5)]
 
-# todo repeat tests for ICDR!
 
 def test_SMOSL4OPER_Img():
     fname = os.path.join(os.path.dirname(__file__),
                          'smos-test-data', 'L4_SMOS_RZSM', 'OPER', '2020',
                          'SM_OPER_MIR_CLF4RD_20200131T000000_20200131T235959_300_001_9.DBL.nc')
+    print(fname)
     ds = SMOSL4Img(fname, parameters=['RZSM'], oper=True)
     image = ds.read(datetime(2020, 1, 31))
     assert list(image.data.keys()) == ['RZSM']
@@ -179,7 +177,7 @@ def test_SMOSL4OPER_Img_flatten():
 
 def test_SMOSL4OPER_DS():
     fname = os.path.join(os.path.dirname(__file__),
-                         'smos-test-data', 'L4_SMOS_RZSM', 'OPER', '2020')
+                         'smos-test-data', 'L4_SMOS_RZSM', 'OPER')
     ds = SMOSL4Ds(fname, parameters=['RZSM'], oper=True)
     image = ds.read(timestamp=datetime(2020, 1, 31))
     assert list(image.data.keys()) == ['RZSM']
@@ -191,7 +189,7 @@ def test_SMOSL4OPER_DS():
     # test for correct masking --> point with data
     nptest.assert_almost_equal(image.lon[355, 458], -61.08069, 4)
     nptest.assert_almost_equal(image.lat[355, 458], -12.55398, 4)
-    nptest.assert_almost_equal(image.data['RZSM'][355, 458], 0.163186, 4)
+    nptest.assert_almost_equal(image.data['RZSM'][355, 458], 0.1866512, 4)
 
     metadata_keys = [u'_FillValue',
                      u'long_name',
@@ -203,12 +201,10 @@ def test_SMOSL4OPER_DS():
 
 
 def test_SMOSL4OPER_ts_for_daterange():
-    fname = os.path.join(os.path.dirname(__file__),
-                         'smos-test-data', 'L4_SMOS_RZSM', 'OPER', '2020')
-    ds = SMOSL4Ds(fname, parameters=['RZSM'], flatten=True, oper=True)
+    ds = SMOSL4Ds('', parameters=['RZSM'], flatten=True, oper=True)
 
-    tstamps = ds.tstamps_for_daterange(start_date=datetime(2020, 1, 31),
-                                       end_date=datetime(2018, 1, 5)) #todo compress and add 2nd oper file
+    tstamps = ds.tstamps_for_daterange(start_date=datetime(2018, 1, 1),
+                                       end_date=datetime(2018, 1, 5))
     assert len(tstamps) == 5
     assert tstamps == [datetime(2018, 1, 1),
                        datetime(2018, 1, 2),

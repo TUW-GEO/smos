@@ -361,7 +361,7 @@ class SMOSL4Ds(MultiTemporalImageBase):
         as in the data.
     """
 
-    default_fname_template = "SM_*_MIR_CLF4RD_{datetime}T000000_{datetime}T235959_*_*_*.DBL.nc"
+    default_fname_template = "SM_*_MIR_CLF4RD*_{datetime}T000000_{datetime}T235959_*_*_*.DBL.nc"
 
     def __init__(self, data_path, parameters=None, flatten=False,
                  grid=EASE25CellGrid(bbox=None), filename_templ=None,
