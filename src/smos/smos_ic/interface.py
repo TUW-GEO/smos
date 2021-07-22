@@ -111,12 +111,12 @@ class SMOSImg(ImageBase):
         return_metadata = {}
 
         try:
-            yres, xres = self.grid.subset_shape
+            rows, cols = self.grid.subset_shape
         except AttributeError:
-            yres, xres = self.grid.shape
+            rows, cols = self.grid.shape
 
         for param in self.parameters:
-            data = np.full((yres, xres), np.nan)
+            data = np.full((rows, cols), np.nan)
             return_img[param] = data.flatten()
             return_metadata[param] = {'image_missing': 1}
 
@@ -211,12 +211,12 @@ class SMOSImg(ImageBase):
             except AttributeError:
                 shape = self.grid.shape
 
-            yres, xres = shape
+            rows, cols = shape
             for key in return_img:
-                return_img[key] = np.flipud(return_img[key].reshape(xres, yres))
+                return_img[key] = np.flipud(return_img[key].reshape(rows, cols))
 
-            self.img = Image(self.grid.activearrlon.reshape(xres, yres),
-                             np.flipud(self.grid.activearrlat.reshape(xres, yres)),
+            self.img = Image(self.grid.activearrlon.reshape(rows, cols),
+                             np.flipud(self.grid.activearrlat.reshape(rows, cols)),
                              return_img,
                              return_metadata,
                              timestamp)
