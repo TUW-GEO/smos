@@ -472,7 +472,7 @@ class SMOSL4Ds(MultiTemporalImageBase):
         return timestamps
 
 
-class SMOSL4Ts(GriddedNcOrthoMultiTs): #todo Still to adapt for L4
+class SMOSL4Ts(GriddedNcOrthoMultiTs):
 
     _t0_vars = {'sec': 'UTC_Seconds', 'days': 'Days'}
     _t0_unit = 'days since 2000-01-01'
@@ -480,7 +480,7 @@ class SMOSL4Ts(GriddedNcOrthoMultiTs): #todo Still to adapt for L4
     def __init__(self, ts_path, grid_path=None, index_add_time=False,
                  drop_missing=True, **kwargs):
         """
-        Class for reading SMOS time series after reshuffling images.
+        Class for reading smos L4 time series after reshuffling images.
         Missing images are represented in time series as lines where all
         variables are NaN.
 
@@ -579,7 +579,7 @@ class SMOSL4Ts(GriddedNcOrthoMultiTs): #todo Still to adapt for L4
             Time Series data at the selected location
         """
 
-        ts = super(SMOSTs, self).read(*args, **kwargs)
+        ts = super(SMOSL4Ts, self).read(*args, **kwargs)
 
         if self.drop_missing:
             ts = ts.dropna(how='all')
