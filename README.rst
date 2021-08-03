@@ -69,6 +69,7 @@ Currently the following products are supported, additional products can be
 added.
 
 - `SMOS IC <https://www.catds.fr/Products/Available-products-from-CEC-SM/SMOS-IC>`_: SMOS INRA-CESBIO (SMOS-IC) 25km
+- `SMOS L4 RZSM <https://www.catds.fr/Products/Available-products-from-CEC-SM/L4-Land-research-products>`_: SMOS CATDS-CESBIO (SMOS L4 RZSM) 25km
 
 Contribute
 ==========

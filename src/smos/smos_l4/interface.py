@@ -355,6 +355,10 @@ class SMOSL4Ds(MultiTemporalImageBase):
         Values for locations that are not assigned any of the here passed flags
         are replaced with NaN (by default only the missing-data, i.e. flag=-1,
         are filtered out). If None is passed, no flags are considered.
+    oper : bool, optional (default: False)
+        Boolean operator distinguishing between the SMOS L4 RZSM Scientific and Operational
+        products. Distinction is made due to differences in quality flag variable naming, values
+        and their significance (see docs/varnames.rst).
     float_fillval : float or None, optional (default: np.nan)
         Fill Value for masked pixels, this is only applied to float variables.
         Therefore e.g. mask variables are never filled but use the fill value
@@ -522,7 +526,7 @@ class SMOSL4Ts(GriddedNcOrthoMultiTs): #todo Still to adapt for L4
 
         self.drop_missing = drop_missing
         grid = load_grid(grid_path)
-        super(SMOSTs, self).__init__(ts_path, grid, **kwargs)
+        super(SMOSL4Ts, self).__init__(ts_path, grid, **kwargs)
 
         self.index_add_time = index_add_time
         if (self.parameters is not None) and self.index_add_time:
