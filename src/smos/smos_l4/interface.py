@@ -303,7 +303,10 @@ class SMOSL4Img(ImageBase):
                              ('subset_software', f"{dist_name} | {subdist_name} | {__version__}")])
             glob_attrs = self.glob_attrs
             for k in ['ease_global', 'history', 'creation_time', 'NCO']:
-                glob_attrs.pop(k)
+                try:
+                    glob_attrs.pop(k)
+                except KeyError:
+                    continue
             glob_attrs.update(this_global_attrs)
             ds.setncatts(glob_attrs)
 
