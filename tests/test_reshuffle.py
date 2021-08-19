@@ -25,7 +25,7 @@ import os
 import numpy as np
 import numpy.testing as nptest
 import tempfile
-from smos.smos_ic.reshuffle import main
+from smos.smos_ic.reshuffle_ic import main
 import glob
 from smos.smos_ic.interface import SMOSTs
 from datetime import timedelta

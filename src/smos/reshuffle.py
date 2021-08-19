@@ -21,19 +21,9 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-"""
-Module for a command line interface to convert the SMOS image data into a
-time series format using the repurpose package
-"""
-
 import os
-import sys
 import argparse
 from datetime import datetime
-
-from repurpose.img2ts import Img2Ts
-from smos.smos_l4.interface import SMOSL4Img, SMOSL4Ds
-from smos.grid import EASE25CellGrid
 from netCDF4 import Dataset
 
 
@@ -91,61 +81,6 @@ def str2bool(val):
         return False
 
 
-def reshuffle(input_root, outputpath,
-              startdate, enddate,
-              imgbuffer=200, **ds_kwargs):
-    """
-    Reshuffle method applied to SMOS image data.
-
-    Parameters
-    ----------
-    input_root: string
-        input path where smos L4 data was downloaded to (yearly folders)
-    outputpath : string
-        Output path.
-    startdate : datetime
-        Start date.
-    enddate : datetime
-        End date.
-    imgbuffer: int, optional
-        How many images to read at once before writing time series.
-    ds_kwargs: dict
-        Kwargs that are passed to the image datastack class
-    """
-
-    ff, file_vars = firstfile(input_root)
-    fp, ff = os.path.split(ff)
-
-    if 'grid' not in ds_kwargs.keys():
-        ds_kwargs['grid'] = EASE25CellGrid(None)
-    if 'parameters' not in ds_kwargs.keys():
-        ds_kwargs['parameters'] = None
-
-    # this is only for reading the ts_attrs
-    input_dataset = SMOSL4Img(filename=os.path.join(fp, ff),
-                            parameters=ds_kwargs['parameters'], flatten=True, read_flags=None,
-                            grid=ds_kwargs['grid'], oper=ds_kwargs['oper'] if 'oper' in ds_kwargs else False)
-    _, ts_attributes = input_dataset._read_img()
-    global_attr = input_dataset.get_global_attrs()
-
-    if ds_kwargs['parameters'] is None:
-        ds_kwargs['parameters'] = input_dataset.parameters
-
-    input_dataset = SMOSL4Ds(input_root, flatten=True, **ds_kwargs)
-
-    if not os.path.exists(outputpath):
-        os.makedirs(outputpath)
-
-    # get time series attributes from first day of data.
-    reshuffler = Img2Ts(input_dataset=input_dataset, outputpath=outputpath,
-                        startdate=startdate, enddate=enddate,
-                        input_grid=ds_kwargs['grid'].cut(),  # drop points that are not subset
-                        imgbuffer=imgbuffer, cellsize_lat=5.0,
-                        cellsize_lon=5.0, global_attr=global_attr, zlib=True,
-                        unlim_chunksize=1000, ts_attributes=ts_attributes)
-    reshuffler.calc()
-
-
 def parse_args(args):
     """
     Parse command line parameters for recursive download.
@@ -181,7 +116,7 @@ def parse_args(args):
     parser.add_argument("--parameters", metavar="parameters", default=None,
                         nargs="+",
                         help=("Parameters to reshuffle into time series format. "
-                              "e.g. RZSM. If this is not specified, all "
+                              "e.g. Soil_Moisture. If this is not specified, all "
                               "variables in the image file will be reshuffled. "
                               "Default: None"))
 
@@ -204,7 +139,7 @@ def parse_args(args):
 
     args = parser.parse_args(args)
 
-    print(f"Converting SMOS L4 RZSM data from {args.dataset_root} between "
+    print(f"Converting SMOS IC data from {args.dataset_root} between "
           f"{args.start.isoformat()} and {args.end.isoformat()} "
           f"into folder {args.timeseries_root}. ")
     print(f"Masking to include only recommended values is "
@@ -213,32 +148,3 @@ def parse_args(args):
         print(f"Bounding Box used: {str(args.bbox)}")
 
     return args
-
-
-def main(args):
-    """
-    Main routine used for command line interface.
-    Parameters
-    ----------
-    args : list of str
-        Command line arguments.
-    """
-    args = parse_args(args)
-
-    input_grid = EASE25CellGrid(bbox=tuple(args.bbox) if args.bbox is not None else None)
-
-    flags = (0) if args.only_good else (0, 1)
-
-    ds_kwargs = {'read_flags': flags, 'grid': input_grid,
-                 'parameters': args.parameters}
-
-    reshuffle(args.dataset_root,
-              args.timeseries_root,
-              args.start,
-              args.end,
-              imgbuffer=args.imgbuffer,
-              **ds_kwargs)
-
-
-def run():
-    main(sys.argv[1:])

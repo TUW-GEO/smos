@@ -25,7 +25,7 @@ import os
 import numpy as np
 import numpy.testing as nptest
 import tempfile
-from smos.smos_l4.reshuffle import main
+from smos.smos_l4.reshuffle_l4 import main
 import glob
 from smos.smos_l4.interface import SMOSL4Ts
 
