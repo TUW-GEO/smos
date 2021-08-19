@@ -27,7 +27,7 @@ import numpy.testing as nptest
 import tempfile
 from smos.smos_l4.reshuffle_l4 import main
 import glob
-from smos.smos_l4.interface import SMOSL4Ts
+from smos.interface import SMOSTs
 
 
 def test_SMOS_L4_reshuffle_global():
@@ -44,7 +44,7 @@ def test_SMOS_L4_reshuffle_global():
 
         main(args)
         assert len(glob.glob(os.path.join(ts_path, "*.nc"))) == 2449
-        ds = SMOSL4Ts(ts_path, ioclass_kws={'read_bulk': True}, drop_missing=False)
+        ds = SMOSTs(ts_path, ioclass_kws={'read_bulk': True}, drop_missing=False)
         ts = ds.read(150.625, -32.125)  # this is the same point as in image test
         assert ts['QUAL'].dtype == float # because we dont drop missing
         sm_values_should = np.array([0.136741, 0.136160, np.nan], dtype=np.float32)
@@ -64,7 +64,7 @@ def test_SMOS_L4_reshuffle_subset():
 
         main(args)
         assert len(glob.glob(os.path.join(ts_path, "*.nc"))) == 109
-        ds = SMOSL4Ts(ts_path, drop_missing=False, ioclass_kws={'read_bulk': True})
+        ds = SMOSTs(ts_path, drop_missing=False, ioclass_kws={'read_bulk': True})
 
         ts = ds.read(20.36023, 47.682177)
         timestamp0 = ts.index[0]
@@ -72,7 +72,7 @@ def test_SMOS_L4_reshuffle_subset():
         assert ts['QUAL'].dtype == float
         assert ts['RZSM'].dtype == float
         ds.close()
-        ds = SMOSL4Ts(ts_path, drop_missing=False, ioclass_kws={'read_bulk': True})
+        ds = SMOSTs(ts_path, drop_missing=False, ioclass_kws={'read_bulk': True})
         ts = ds.read(-61.08069, -12.55398)
         assert np.isnan(ts.loc['2018-01-01', 'RZSM'])
         assert np.isnan(ts.loc['2018-01-01', 'QUAL'])

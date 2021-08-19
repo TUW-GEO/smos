@@ -31,7 +31,7 @@ import sys
 from datetime import datetime
 
 from repurpose.img2ts import Img2Ts
-from smos.smos_ic.interface import SMOSImg, SMOSDs
+from smos.smos_ic.interface_ic import SMOSImg, SMOSDs
 from smos.grid import EASE25CellGrid
 from smos.reshuffle import firstfile, mkdate, str2bool, parse_args
 

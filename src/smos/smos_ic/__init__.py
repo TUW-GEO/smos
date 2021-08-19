@@ -10,4 +10,5 @@ except DistributionNotFound:
 finally:
     del get_distribution, DistributionNotFound
 
-from smos.smos_ic.interface import SMOSDs, SMOSTs, SMOSImg
+from smos.smos_ic.interface_ic import SMOSDs, SMOSImg
+from smos.interface import SMOSTs
