@@ -37,30 +37,49 @@ Installation
 Before installing this package via pip, please install the necessary
 `conda <http://conda.pydata.org/miniconda.html>`_ dependencies:
 
-.. code-block:: shell
+.. code::
 
-  $ conda install -c conda-forge netcdf4 pyresample
-  $ pip install smos
+    $ conda install -c conda-forge netcdf4 pyresample
 
-You can also install all needed (conda and pip) dependencies at once using the
-following commands after cloning this repository.  This is recommended for
-developers of the package.
 
-.. code-block:: shell
+Then
 
-  $ git clone https://github.com/TUW-GEO/smos.git --recursive
-  $ cd smos
-  $ conda create -n smos python=3.6 # or any supported python version
-  $ source activate smos
-  $ conda update -f environment.yml
-  $ python setup.py develop
+.. code::
 
-or you can use the installation script with/without the develop flag (``-d``),
-which will call ``python setup.py develop``, respectively ``python setup.py install``.
+    $ pip install smos
 
-.. code-block:: shell
+should work.
 
-    $ bash install.sh -d --python 3.6 --name smos
+Example installation script
+---------------------------
+
+The following script will install miniconda and setup the environment on a UNIX
+like system. Miniconda will be installed into ``$HOME/miniconda``.
+
+.. code::
+
+   wget https://repo.continuum.io/miniconda/Miniconda-latest-Linux-x86_64.sh -O miniconda.sh
+   bash miniconda.sh -b -p $HOME/miniconda
+   export PATH="$HOME/miniconda/bin:$PATH"
+   git clone git@github.com:TUW-GEO/smos.git smos
+   cd smos
+   conda env create -f environment.yml
+   source activate smos
+
+This script adds ``$HOME/miniconda/bin`` temporarily to the ``PATH`` to do this
+permanently add ``export PATH="$HOME/miniconda/bin:$PATH"`` to your ``.bashrc``
+or ``.zshrc``
+
+The second to last line in the example activates the ``smos`` environment.
+
+After that you should be able to run:
+
+.. code::
+
+    pytest
+
+to run the test suite.
+
 
 Supported Products
 ==================
@@ -69,6 +88,7 @@ Currently the following products are supported, additional products can be
 added.
 
 - `SMOS IC <https://www.catds.fr/Products/Available-products-from-CEC-SM/SMOS-IC>`_: SMOS INRA-CESBIO (SMOS-IC) 25km
+- `SMOS L4 RZSM <https://www.catds.fr/Products/Available-products-from-CEC-SM/L4-Land-research-products>`_: SMOS CATDS-CESBIO (SMOS L4 RZSM) 25km
 
 Contribute
 ==========

@@ -25,7 +25,7 @@
 Tests for storing subset images.
 """
 
-from smos.smos_ic import SMOSDs
+from smos.smos_ic.interface_ic import SMOS_IC_Ds
 import os
 import numpy as np
 import numpy.testing as nptest
@@ -43,7 +43,7 @@ def test_SMOS_IC_Ds_subset(stackfile, files):
     subgrid = EASE25CellGrid(bbox=(-11., 34., 43., 71.))
     params = ['Soil_Moisture', 'Quality_Flag']
 
-    ds = SMOSDs(dsname, parameters=params, grid=subgrid, read_flags=(0, 1))
+    ds = SMOS_IC_Ds(dsname, parameters=params, grid=subgrid, read_flags=(0, 1))
     image = ds.read(datetime(2018, 1, 1))
 
     # europe subset
