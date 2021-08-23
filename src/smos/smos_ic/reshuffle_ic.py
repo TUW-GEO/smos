@@ -31,7 +31,7 @@ import sys
 from datetime import datetime
 
 from repurpose.img2ts import Img2Ts
-from smos.smos_ic.interface_ic import SMOSImg, SMOSDs
+from smos.smos_ic.interface_ic import SMOS_IC_Img, SMOS_IC_Ds
 from smos.grid import EASE25CellGrid
 from smos.reshuffle import firstfile, mkdate, str2bool, parse_args
 
@@ -67,16 +67,16 @@ def reshuffle(input_root, outputpath,
         ds_kwargs['parameters'] = None
 
     # this is only for reading the ts_attrs
-    input_dataset = SMOSImg(filename=os.path.join(fp, ff),
-                            parameters=ds_kwargs['parameters'], flatten=True, read_flags=None,
-                            grid=ds_kwargs['grid'])
+    input_dataset = SMOS_IC_Img(filename=os.path.join(fp, ff),
+                                parameters=ds_kwargs['parameters'], flatten=True, read_flags=None,
+                                grid=ds_kwargs['grid'])
     _, ts_attributes = input_dataset._read_img()
     global_attr = input_dataset.get_global_attrs()
 
     if ds_kwargs['parameters'] is None:
         ds_kwargs['parameters'] = input_dataset.parameters
 
-    input_dataset = SMOSDs(input_root, flatten=True, **ds_kwargs)
+    input_dataset = SMOS_IC_Ds(input_root, flatten=True, **ds_kwargs)
 
     if not os.path.exists(outputpath):
         os.makedirs(outputpath)

@@ -25,7 +25,7 @@
 Tests for reading the image datasets.
 '''
 
-from smos.smos_ic import SMOSImg, SMOSDs
+from smos.smos_ic import SMOS_IC_Img, SMOS_IC_Ds
 import os
 import numpy as np
 import numpy.testing as nptest
@@ -36,7 +36,7 @@ def test_SMOS_IC_Img():
     fname = os.path.join(os.path.dirname(__file__),
                          'smos-test-data', 'L3_SMOS_IC', 'ASC', '2018',
                          'SM_RE06_MIR_CDF3SA_20180101T000000_20180101T235959_105_001_8.DBL.nc')
-    ds = SMOSImg(fname, parameters=['Soil_Moisture'], read_flags=None)
+    ds = SMOS_IC_Img(fname, parameters=['Soil_Moisture'], read_flags=None)
     image = ds.read(datetime(2018, 1, 1))
     assert list(image.data.keys()) == ['Soil_Moisture']
     assert image.data['Soil_Moisture'].shape == (584, 1388)
@@ -62,7 +62,7 @@ def test_SMOS_IC_Img_flatten():
     fname = os.path.join(os.path.dirname(__file__),
                          'smos-test-data', 'L3_SMOS_IC', 'ASC', '2018',
                          'SM_RE06_MIR_CDF3SA_20180101T000000_20180101T235959_105_001_8.DBL.nc')
-    ds = SMOSImg(fname, parameters=['Soil_Moisture'], flatten=True)
+    ds = SMOS_IC_Img(fname, parameters=['Soil_Moisture'], flatten=True)
     image = ds.read(datetime(2018, 1, 1))
     assert list(image.data.keys()) == ['Soil_Moisture']
     assert image.data['Soil_Moisture'].shape == (584 * 1388,)
@@ -87,7 +87,7 @@ def test_SMOS_IC_Img_flatten():
 def test_SMOS_IC_DS():
     fname = os.path.join(os.path.dirname(__file__),
                          'smos-test-data', 'L3_SMOS_IC', 'ASC')
-    ds = SMOSDs(fname, parameters=['Soil_Moisture'], read_flags=(0, 1, 2))
+    ds = SMOS_IC_Ds(fname, parameters=['Soil_Moisture'], read_flags=(0, 1, 2))
     image = ds.read(timestamp=datetime(2018, 1, 1))
     assert list(image.data.keys()) == ['Soil_Moisture']
     assert image.data['Soil_Moisture'].shape == (584, 1388)
@@ -112,7 +112,7 @@ def test_SMOS_IC_DS():
 def test_SMOS_IC_ts_for_daterange():
     fname = os.path.join(os.path.dirname(__file__),
                          'smos-test-data', 'L3_SMOS_IC', 'ASC', '2018')
-    ds = SMOSDs(fname, parameters=['Soil_Moisture'], read_flags=(0, 1), flatten=True)
+    ds = SMOS_IC_Ds(fname, parameters=['Soil_Moisture'], read_flags=(0, 1), flatten=True)
 
     tstamps = ds.tstamps_for_daterange(start_date=datetime(2018, 1, 1),
                                        end_date=datetime(2018, 1, 5))

@@ -31,7 +31,7 @@ import sys
 from datetime import datetime
 
 from repurpose.img2ts import Img2Ts
-from smos.smos_l4.interface_l4 import SMOSL4Img, SMOSL4Ds
+from smos.smos_l4.interface_l4 import SMOS_L4_Img, SMOS_L4_Ds
 from smos.grid import EASE25CellGrid
 from smos.reshuffle import firstfile, mkdate, str2bool, parse_args
 
@@ -67,7 +67,7 @@ def reshuffle(input_root, outputpath,
         ds_kwargs['parameters'] = None
 
     # this is only for reading the ts_attrs
-    input_dataset = SMOSL4Img(filename=os.path.join(fp, ff),
+    input_dataset = SMOS_L4_Img(filename=os.path.join(fp, ff),
                             parameters=ds_kwargs['parameters'], flatten=True, read_flags=None,
                             grid=ds_kwargs['grid'], oper=ds_kwargs['oper'] if 'oper' in ds_kwargs else False)
     _, ts_attributes = input_dataset._read_img()
@@ -76,7 +76,7 @@ def reshuffle(input_root, outputpath,
     if ds_kwargs['parameters'] is None:
         ds_kwargs['parameters'] = input_dataset.parameters
 
-    input_dataset = SMOSL4Ds(input_root, flatten=True, **ds_kwargs)
+    input_dataset = SMOS_L4_Ds(input_root, flatten=True, **ds_kwargs)
 
     if not os.path.exists(outputpath):
         os.makedirs(outputpath)

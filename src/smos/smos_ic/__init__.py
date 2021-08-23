@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+"""
 from pkg_resources import get_distribution, DistributionNotFound
 
 try:
@@ -10,5 +11,7 @@ except DistributionNotFound:
 finally:
     del get_distribution, DistributionNotFound
 
-from smos.smos_ic.interface_ic import SMOSDs, SMOSImg
+"""
+
+from smos_ic.interface_ic import SMOS_IC_Ds, SMOS_IC_Img
 from smos.interface import SMOSTs

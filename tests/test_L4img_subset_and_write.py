@@ -25,7 +25,7 @@
 Tests for storing subset images.
 """
 
-from smos.smos_l4 import SMOSL4Ds
+from smos.smos_l4 import SMOS_L4_Ds
 import os
 import numpy as np
 import numpy.testing as nptest
@@ -43,7 +43,7 @@ def test_SMOS_L4OPER_Ds_subset(stackfile, files):
     subgrid = EASE25CellGrid(bbox=(-11., 34., 43., 71.))
     params = ['RZSM', 'Quality']
 
-    ds = SMOSL4Ds(dsname, parameters=params, grid=subgrid, oper=True)
+    ds = SMOS_L4_Ds(dsname, parameters=params, grid=subgrid, oper=True)
     image = ds.read(datetime(2020, 1, 31))
 
     # europe subset

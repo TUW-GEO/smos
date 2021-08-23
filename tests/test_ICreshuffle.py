@@ -81,4 +81,4 @@ def test_SMOS_IC_reshuffle_subset():
         ds.close()
 
 if __name__ == '__main__':
-    test_SMOS_IC_reshuffle_subset()
+    test_SMOS_IC_reshuffle_global()
