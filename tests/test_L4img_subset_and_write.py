@@ -25,7 +25,7 @@
 Tests for storing subset images.
 """
 
-from smos.smos_l4 import SMOS_L4_Ds
+from smos.smos_l4.interface_l4 import SMOS_L4_Ds
 import os
 import numpy as np
 import numpy.testing as nptest

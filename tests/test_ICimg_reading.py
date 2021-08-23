@@ -25,7 +25,7 @@
 Tests for reading the image datasets.
 '''
 
-from smos.smos_ic import SMOS_IC_Img, SMOS_IC_Ds
+from smos.smos_ic.interface_ic import SMOS_IC_Img, SMOS_IC_Ds
 import os
 import numpy as np
 import numpy.testing as nptest

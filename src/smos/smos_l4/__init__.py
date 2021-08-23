@@ -10,8 +10,7 @@ except DistributionNotFound:
     __version__ = 'unknown'
 finally:
     del get_distribution, DistributionNotFound
-
-"""
-
 from smos.smos_l4.interface_l4 import SMOS_L4_Ds, SMOS_L4_Img
 from smos.interface import SMOSTs
+"""
+
