@@ -1,9 +1,8 @@
 ====
 SMOS
 ====
-
-.. image:: https://travis-ci.org/TUW-GEO/smos.svg?branch=master
-    :target: https://travis-ci.org/TUW-GEO/smos
+.. image:: https://github.com/TUW-GEO/smos/workflows/Automated%20Tests/badge.svg?branch=master&event=push
+   :target: https://github.com/TUW-GEO/smos/actions
 
 .. image:: https://coveralls.io/repos/github/TUW-GEO/smos/badge.svg?branch=master
     :target: https://coveralls.io/github/TUW-GEO/smos?branch=master
