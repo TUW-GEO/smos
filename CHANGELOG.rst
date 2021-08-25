@@ -4,7 +4,9 @@ Changelog
 
 Unreleased
 ==========
--
+- Add support for SMOS L4 RZSM product (`PR #11 <https://github.com/TUW-GEO/smos/pull/11>`_)
+- Update pyscaffold to v4, Replace Travis CI with GithubActions (`PR #11 <https://github.com/TUW-GEO/smos/pull/11>`_)
+
 
 Version 0.2
 ===========
