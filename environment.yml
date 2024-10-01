@@ -1,12 +1,14 @@
 name: smos
 channels:
   - conda-forge
+  - defaults
 dependencies:
-- numpy>=1.13.0
+- numpy<2
 - pandas
 - netcdf4
 - scipy
 - pyresample
+- dask
 - ipykernel
 - pip
 - pip:
@@ -16,8 +18,9 @@ dependencies:
     - trollsift
     - ease_grid
     - more_itertools
-    - sphinx==4.0.3  # https://github.com/spatialaudio/nbsphinx/issues/584, when this is resolved this line can be deleted to use the latest version.
+    - sphinx
     - nbsphinx
     - sphinx_rtd_theme
+    - git+https://github.com/awst-austria/qa4sm-preprocessing@master
     - pytest
     - pytest-cov

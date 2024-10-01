@@ -79,6 +79,3 @@ def test_SMOS_IC_reshuffle_subset():
         assert np.isnan(ts.loc['2018-01-01', 'Soil_Moisture'])
         assert ts.loc['2018-01-01', 'Quality_Flag'] == 2
         ds.close()
-
-if __name__ == '__main__':
-    test_SMOS_IC_reshuffle_subset()
