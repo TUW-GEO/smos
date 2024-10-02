@@ -25,7 +25,7 @@
 Tests for reading the image datasets.
 '''
 
-from smos.smos_l4 import SMOSL4Img, SMOSL4Ds
+from smos.smos_l4.interface_l4 import SMOS_L4_Img, SMOS_L4_Ds
 import os
 import numpy as np
 import numpy.testing as nptest
@@ -36,7 +36,7 @@ def test_SMOSL4_Img():
     fname = os.path.join(os.path.dirname(__file__),
                          'smos-test-data', 'L4_SMOS_RZSM', 'SCIE', '2018',
                          'SM_SCIE_MIR_CLF4RD_20180101T000000_20180101T235959_301_001_9.DBL.nc')
-    ds = SMOSL4Img(fname, parameters=['RZSM'])
+    ds = SMOS_L4_Img(fname, parameters=['RZSM'])
     image = ds.read(datetime(2018, 1, 1))
     assert list(image.data.keys()) == ['RZSM']
     assert image.data['RZSM'].shape == (584, 1388)
@@ -62,7 +62,7 @@ def test_SMOSL4_Img_flatten():
     fname = os.path.join(os.path.dirname(__file__),
                          'smos-test-data', 'L4_SMOS_RZSM', 'SCIE', '2018',
                          'SM_SCIE_MIR_CLF4RD_20180101T000000_20180101T235959_301_001_9.DBL.nc')
-    ds = SMOSL4Img(fname, parameters=['RZSM'], flatten=True)
+    ds = SMOS_L4_Img(fname, parameters=['RZSM'], flatten=True)
     image = ds.read(datetime(2018, 1, 1))
     assert list(image.data.keys()) == ['RZSM']
     assert image.data['RZSM'].shape == (584 * 1388,)
@@ -87,7 +87,7 @@ def test_SMOSL4_Img_flatten():
 def test_SMOSL4_DS():
     fname = os.path.join(os.path.dirname(__file__),
                          'smos-test-data', 'L4_SMOS_RZSM', 'SCIE')
-    ds = SMOSL4Ds(fname, parameters=['RZSM'])
+    ds = SMOS_L4_Ds(fname, parameters=['RZSM'])
     image = ds.read(timestamp=datetime(2018, 1, 1))
     assert list(image.data.keys()) == ['RZSM']
     assert image.data['RZSM'].shape == (584, 1388)
@@ -110,7 +110,7 @@ def test_SMOSL4_DS():
 
 
 def test_SMOSL4_ts_for_daterange():
-    ds = SMOSL4Ds('', parameters=['RZSM'], flatten=True)
+    ds = SMOS_L4_Ds('', parameters=['RZSM'], flatten=True)
 
     tstamps = ds.tstamps_for_daterange(start_date=datetime(2018, 1, 1),
                                        end_date=datetime(2018, 1, 5))
@@ -127,7 +127,7 @@ def test_SMOSL4OPER_Img():
                          'smos-test-data', 'L4_SMOS_RZSM', 'OPER', '2020',
                          'SM_OPER_MIR_CLF4RD_20200131T000000_20200131T235959_300_001_9.DBL.nc')
     print(fname)
-    ds = SMOSL4Img(fname, parameters=['RZSM'], oper=True)
+    ds = SMOS_L4_Img(fname, parameters=['RZSM'], oper=True)
     image = ds.read(datetime(2020, 1, 31))
     assert list(image.data.keys()) == ['RZSM']
     assert image.data['RZSM'].shape == (584, 1388)
@@ -153,7 +153,7 @@ def test_SMOSL4OPER_Img_flatten():
     fname = os.path.join(os.path.dirname(__file__),
                          'smos-test-data', 'L4_SMOS_RZSM', 'OPER', '2020',
                          'SM_OPER_MIR_CLF4RD_20200131T000000_20200131T235959_300_001_9.DBL.nc')
-    ds = SMOSL4Img(fname, parameters=['RZSM'], flatten=True, oper=True)
+    ds = SMOS_L4_Img(fname, parameters=['RZSM'], flatten=True, oper=True)
     image = ds.read(datetime(2020, 1, 31))
     assert list(image.data.keys()) == ['RZSM']
     assert image.data['RZSM'].shape == (584 * 1388,)
@@ -178,7 +178,7 @@ def test_SMOSL4OPER_Img_flatten():
 def test_SMOSL4OPER_DS():
     fname = os.path.join(os.path.dirname(__file__),
                          'smos-test-data', 'L4_SMOS_RZSM', 'OPER')
-    ds = SMOSL4Ds(fname, parameters=['RZSM'], oper=True)
+    ds = SMOS_L4_Ds(fname, parameters=['RZSM'], oper=True)
     image = ds.read(timestamp=datetime(2020, 1, 31))
     assert list(image.data.keys()) == ['RZSM']
     assert image.data['RZSM'].shape == (584, 1388)
@@ -201,7 +201,7 @@ def test_SMOSL4OPER_DS():
 
 
 def test_SMOSL4OPER_ts_for_daterange():
-    ds = SMOSL4Ds('', parameters=['RZSM'], flatten=True, oper=True)
+    ds = SMOS_L4_Ds('', parameters=['RZSM'], flatten=True, oper=True)
 
     tstamps = ds.tstamps_for_daterange(start_date=datetime(2018, 1, 1),
                                        end_date=datetime(2018, 1, 5))
@@ -211,3 +211,6 @@ def test_SMOSL4OPER_ts_for_daterange():
                        datetime(2018, 1, 3),
                        datetime(2018, 1, 4),
                        datetime(2018, 1, 5)]
+
+if __name__ == '__main__':
+    test_SMOSL4OPER_DS()

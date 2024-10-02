@@ -1,9 +1,8 @@
 ====
 SMOS
 ====
-
-.. image:: https://travis-ci.org/TUW-GEO/smos.svg?branch=master
-    :target: https://travis-ci.org/TUW-GEO/smos
+.. image:: https://github.com/TUW-GEO/smos/workflows/Automated%20Tests/badge.svg?branch=master&event=push
+   :target: https://github.com/TUW-GEO/smos/actions
 
 .. image:: https://coveralls.io/repos/github/TUW-GEO/smos/badge.svg?branch=master
     :target: https://coveralls.io/github/TUW-GEO/smos?branch=master
@@ -88,6 +87,7 @@ Currently the following products are supported, additional products can be
 added.
 
 - `SMOS IC <https://www.catds.fr/Products/Available-products-from-CEC-SM/SMOS-IC>`_: SMOS INRA-CESBIO (SMOS-IC) 25km
+- `SMOS L4 RZSM <https://www.catds.fr/Products/Available-products-from-CEC-SM/L4-Land-research-products>`_: SMOS CATDS-CESBIO (SMOS L4 RZSM) 25km
 
 Contribute
 ==========

@@ -13,6 +13,7 @@ dependencies:
 - pip
 - pip:
     - pygeobase
+    - pygeogrids
     - pynetcf
     - repurpose
     - trollsift

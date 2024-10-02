@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # The MIT License (MIT)
 #
-# Copyright (c) 2019,TU Wien
+# Copyright (c) 2021,TU Wien
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -25,20 +25,19 @@ import os
 import numpy as np
 import numpy.testing as nptest
 import tempfile
-from smos.smos_ic.reshuffle import main
+from smos.smos_l4.reshuffle_l4 import main
 import glob
-from smos.smos_ic.interface import SMOSTs
-from datetime import timedelta
+from smos.interface import SMOSTs
 
 
-def test_SMOS_IC_reshuffle_global():
+def test_SMOS_L4_reshuffle_global():
     inpath = os.path.join(os.path.dirname(os.path.abspath(__file__)),
-                          "smos-test-data", "L3_SMOS_IC", "ASC")
+                          "smos-test-data", "L4_SMOS_RZSM", "SCIE")
 
     with tempfile.TemporaryDirectory() as ts_path:
         startdate = '2018-01-01'  # 1 day is missing, should be filled with nans
         enddate = '2018-01-03'
-        parameters = ["--parameters", "Soil_Moisture", "Quality_Flag"]
+        parameters = ["--parameters", "RZSM", "QUAL"]
 
         args = [inpath, ts_path, startdate, enddate] + \
                parameters + ['--only_good', False]
@@ -46,16 +45,16 @@ def test_SMOS_IC_reshuffle_global():
         main(args)
         assert len(glob.glob(os.path.join(ts_path, "*.nc"))) == 2449
         ds = SMOSTs(ts_path, ioclass_kws={'read_bulk': True}, drop_missing=False)
-        ts = ds.read(-61.08069, -12.55398)  # this is the same point as in image test
-        assert ts['Quality_Flag'].dtype == np.float64 # because we dont drop missing
-        sm_values_should = np.array([0.198517, np.nan, np.nan], dtype=np.float32)
-        nptest.assert_allclose(ts['Soil_Moisture'].values, sm_values_should, 4)
+        ts = ds.read(150.625, -32.125)  # this is the same point as in image test
+        assert ts['QUAL'].dtype == float # because we dont drop missing
+        sm_values_should = np.array([0.136741, 0.136160, np.nan], dtype=np.float32)
+        nptest.assert_allclose(ts['RZSM'].values, sm_values_should, 4)
         ds.close()
 
 
-def test_SMOS_IC_reshuffle_subset():
+def test_SMOS_L4_reshuffle_subset():
     inpath = os.path.join(os.path.dirname(os.path.abspath(__file__)),
-                          "smos-test-data", "L3_SMOS_IC", "ASC")
+                          "smos-test-data", "L4_SMOS_RZSM", "SCIE")
     with tempfile.TemporaryDirectory() as ts_path:
         startdate = '2018-01-01'  # 1 day is missing, should be filled with nans
         enddate = '2018-01-03'
@@ -65,21 +64,16 @@ def test_SMOS_IC_reshuffle_subset():
 
         main(args)
         assert len(glob.glob(os.path.join(ts_path, "*.nc"))) == 109
-        ds = SMOSTs(ts_path, ioclass_kws={'read_bulk': True}, index_add_time=True,
-                    drop_missing=True)
+        ds = SMOSTs(ts_path, drop_missing=False, ioclass_kws={'read_bulk': True})
 
-        ts = ds.read(20.36023, 47.682177)  # this is the same point as in image subset test
-        assert ts.index[0] == ts.iloc[0]['_date'] + timedelta(seconds=int(ts.iloc[0]['UTC_Seconds']))
+        ts = ds.read(20.36023, 47.682177)
         timestamp0 = ts.index[0]
-        nptest.assert_almost_equal(ts.loc[timestamp0, 'Soil_Moisture'], 0.31218335)
-        assert ts['Quality_Flag'].dtype == np.int64
-        assert ts['Soil_Moisture'].dtype == np.float64
+        nptest.assert_almost_equal(ts.loc[timestamp0, 'RZSM'], 0.248682, 4)
+        assert ts['QUAL'].dtype == float
+        assert ts['RZSM'].dtype == float
         ds.close()
-        ds = SMOSTs(ts_path, ioclass_kws={'read_bulk': True},
-                    index_add_time=False, drop_missing=False)
-        ts = ds.read(-4.7, 56.9)
-        nptest.assert_almost_equal(ts.loc['2018-01-01', 'Soil_Moisture'], 0.2196, 4)
-        assert ts.loc['2018-01-01', 'Quality_Flag'] == 1.0
-        assert np.isnan(ds.read(-4.7, 65)['Soil_Moisture'].iloc[0])
-
+        ds = SMOSTs(ts_path, drop_missing=False, ioclass_kws={'read_bulk': True})
+        ts = ds.read(-61.08069, -12.55398)
+        assert np.isnan(ts.loc['2018-01-01', 'RZSM'])
+        assert np.isnan(ts.loc['2018-01-01', 'QUAL'])
         ds.close()
