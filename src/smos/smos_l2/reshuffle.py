@@ -92,7 +92,7 @@ def extend_ts(img_path, ts_path, memory=4):
     if not os.path.isfile(out_file):
         raise ValueError("No overview.yml found in the time series directory."
                          "Please use reshuffle / swath2ts for initial time "
-                         "series setup.")
+                         f"series setup or provide overview.yml in {ts_path}.")
 
     props = read_summary_yml(ts_path)
     startdate = pd.to_datetime(props['enddate']).to_pydatetime()

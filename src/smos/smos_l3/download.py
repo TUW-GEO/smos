@@ -5,7 +5,7 @@ Downloaded from CATDS:
 
 ftp.ifremer.fr
 user : ext-catds-cpdc
-password : catds2010
+p : catds2010
 
 on 09-05-2022
 
