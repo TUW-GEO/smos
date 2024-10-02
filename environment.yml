@@ -21,6 +21,6 @@ dependencies:
     - sphinx
     - nbsphinx
     - sphinx_rtd_theme
-    - git+https://github.com/awst-austria/qa4sm-preprocessing@master
+    - git+https://github.com/awst-austria/qa4sm-preprocessing@smos-package
     - pytest
     - pytest-cov

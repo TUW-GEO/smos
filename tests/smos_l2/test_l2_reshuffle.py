@@ -40,6 +40,13 @@ def test_reshuffle_and_update():
             ts.loc['2022-01-02', 'Soil_Moisture'].values[0],
             0.52442, 5
         )
+        assert 1 in ts.index.day
+        assert 2 in ts.index.day
+        assert 3 not in ts.index.day  # this must be excluded
+
         assert len(ts) == 2
 
         reader.close()
+
+if __name__ == '__main__':
+    test_reshuffle_and_update()
