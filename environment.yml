@@ -1,11 +1,12 @@
 name: smos
 channels:
-  - conda-forge
   - defaults
+  - conda-forge
 dependencies:
 - numpy<2
 - pandas
 - netcdf4
+- xarray
 - scipy
 - pyresample
 - dask

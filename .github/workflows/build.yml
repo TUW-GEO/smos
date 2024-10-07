@@ -56,7 +56,7 @@ jobs:
       - name: Install base package and run tests
         shell: bash -l {0}
         run: |
-          pip install -e .[testing] --no-deps
+          pip install -e .[testing]
           pytest
       - name: Upload Coverage
         shell: bash -l {0}
