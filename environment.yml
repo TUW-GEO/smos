@@ -5,7 +5,7 @@ channels:
 dependencies:
 - numpy<2
 - pandas
-- netCDF4
+- netcdf4
 - scipy
 - pyresample
 - dask

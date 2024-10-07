@@ -23,7 +23,7 @@
 # SOFTWARE.
 
 import numpy as np
-from netCDF4 import Dataset, date2num, num2date
+from netCDF4 import Dataset
 from smos.grid import EASE25CellGrid
 from smos.interface import SMOSImg, SMOSDs
 
