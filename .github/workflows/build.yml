@@ -20,7 +20,7 @@ jobs:
       matrix:
         include:
           - os: "ubuntu-latest"
-            python-version: '3.8'  # first supported
+            python-version: '3.9'  # first supported
 #          - os: "windows-latest"
 #            python-version: '3.8'  # first supported
 #          - os: "ubuntu-latest"
