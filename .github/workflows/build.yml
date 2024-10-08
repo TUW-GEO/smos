@@ -37,7 +37,7 @@ jobs:
         run: git lfs checkout
       - uses: mamba-org/setup-micromamba@v2
         with:
-          micromamba-version: "1.5.10"
+          micromamba-version: "1.5.10-0"
           environment-file: environment.yml
           create-args: python=${{ matrix.python-version }}
           post-cleanup: "all"
