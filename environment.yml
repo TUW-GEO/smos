@@ -7,6 +7,8 @@ dependencies:
 - pandas
 - netcdf4
 - scipy
+- dask
+- xarray
 - pyresample
 - pip
 - pip:
