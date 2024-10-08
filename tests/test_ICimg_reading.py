@@ -30,15 +30,27 @@ import os
 import numpy as np
 import numpy.testing as nptest
 from datetime import datetime
+import xarray as xr
+from netCDF4 import Dataset
+import matplotlib.pyplot as plt
 
 
 def test_SMOS_IC_Img():
     fname = os.path.join(os.path.dirname(__file__),
                          'smos-test-data', 'L3_SMOS_IC', 'ASC', '2018',
                          'SM_RE06_MIR_CDF3SA_20180101T000000_20180101T235959_105_001_8.DBL.nc')
+    assert os.path.isfile(fname)
+    ds = xr.open_dataset(fname)
+    ds.close()
+    with Dataset(fname) as ds:
+        img = np.flipud(ds['Soil_Moisture'][:])
+        assert img.shape == (584, 1388)
+        nptest.assert_almost_equal(img[355, 458], 0.198517, 4)
+
     ds = SMOS_IC_Img(fname, parameters=['Soil_Moisture'], read_flags=None)
     image = ds.read(datetime(2018, 1, 1))
     assert list(image.data.keys()) == ['Soil_Moisture']
+
     assert image.data['Soil_Moisture'].shape == (584, 1388)
     # test for correct masking --> point without data
     nptest.assert_almost_equal(image.lon[425, 1237], 140.9654, 4)
