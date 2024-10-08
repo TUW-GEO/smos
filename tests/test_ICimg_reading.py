@@ -44,13 +44,15 @@ def test_SMOS_IC_Img():
     assert xr.__version__ == '2022.11.0'
     assert netCDF4.__version__ == "1.5.7"
 
-    ds = xr.open_dataset(fname, engine='netcdf4')
-    ds.close()
+
     with Dataset(fname) as ds:
         img = np.flipud(ds['Soil_Moisture'][:])
         assert img.shape == (584, 1388)
         nptest.assert_almost_equal(img[355, 458], 0.198517, 4)
 
+    ds = xr.open_dataset(fname, engine='netcdf4')
+    ds.close()
+    
     ds = SMOS_IC_Img(fname, parameters=['Soil_Moisture'], read_flags=None)
     image = ds.read(datetime(2018, 1, 1))
     assert list(image.data.keys()) == ['Soil_Moisture']
