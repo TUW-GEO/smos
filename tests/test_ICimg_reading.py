@@ -32,7 +32,6 @@ import numpy.testing as nptest
 from datetime import datetime
 import xarray as xr
 from netCDF4 import Dataset
-import matplotlib.pyplot as plt
 
 
 def test_SMOS_IC_Img():
