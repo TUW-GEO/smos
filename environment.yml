@@ -3,13 +3,10 @@ channels:
   - defaults
   - conda-forge
 dependencies:
-- numpy<2
-- pandas==1.5.3
-- pykdtree
+- numpy>=1.13.0
+- pandas
+- netcdf4
 - scipy
-- xarray
-- dask
-- netCDF4!=1.6.2
 - pyresample
 - pip
 - pip:
