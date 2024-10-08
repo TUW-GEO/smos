@@ -64,7 +64,7 @@ jobs:
         shell: bash -l {0}
         run: |
           pip install -e .[testing]
-          pip install netCDF4
+          mamba install -c conda-forge xarray netCDF4
           pytest
       - name: Upload Coverage
         shell: bash -l {0}
