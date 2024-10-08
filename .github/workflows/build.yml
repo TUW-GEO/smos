@@ -35,15 +35,22 @@ jobs:
           lfs: true
       - name: Checkout LFS objects
         run: git lfs checkout
-      - uses: mamba-org/setup-micromamba@v2
+#      - uses: mamba-org/setup-micromamba@v2
+#        with:
+#          micromamba-version: "1.5.10-0"
+#          environment-file: environment.yml
+#          create-args: python=${{ matrix.python-version }}
+#          post-cleanup: "all"
+#          init-shell: >-
+#            bash
+#            powershell
+      - uses: conda-incubator/setup-miniconda@v3
         with:
-          micromamba-version: "1.5.10-0"
-          environment-file: environment.yml
-          create-args: python=${{ matrix.python-version }}
-          post-cleanup: "all"
-          init-shell: >-
-            bash
-            powershell
+          auto-update-conda: true
+          python-version: ${{ matrix.python-version }}
+          channel-priority: flexible
+          activate-environment: smos
+          auto-activate-base: false
       - name: Print Infos
         shell: bash -l {0}
         run: |
