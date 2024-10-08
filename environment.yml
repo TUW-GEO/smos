@@ -3,7 +3,7 @@ channels:
   - defaults
   - conda-forge
 dependencies:
-- numpy>=1.13.0
+- numpy>=1.13.0,<2
 - pandas
 - netCDF4!=1.6.2
 - scipy
@@ -15,6 +15,7 @@ dependencies:
     - pygeobase
     - pygeogrids
     - pynetcf
+    - pyproj
     - git+https://github.com/TUW-GEO/repurpose@master
     - trollsift
     - ease_grid
