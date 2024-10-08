@@ -21,12 +21,12 @@ jobs:
         include:
           - os: "ubuntu-latest"
             python-version: '3.8'  # first supported
-#          - os: "windows-latest"
-#            python-version: '3.8'  # first supported
-#          - os: "ubuntu-latest"
-#            python-version: '3.12'  # latest supported
-#          - os: "windows-latest"
-#            python-version: '3.12'  # latest supported
+          - os: "windows-latest"
+            python-version: '3.8'  # first supported
+          - os: "ubuntu-latest"
+            python-version: '3.12'  # latest supported
+          - os: "windows-latest"
+            python-version: '3.12'  # latest supported
     steps:
       - uses: actions/checkout@v4
         with:
@@ -67,7 +67,7 @@ jobs:
         shell: bash -l {0}
         run: |
           pip install -e .[testing]
-          pytest tests/test_ICimg_reading.py::test_SMOS_IC_Img
+          pytest
       - name: Upload Coverage
         shell: bash -l {0}
         run: |
