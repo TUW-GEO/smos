@@ -33,12 +33,17 @@ from datetime import datetime
 import xarray as xr
 from netCDF4 import Dataset
 
+import netCDF4
+
 
 def test_SMOS_IC_Img():
     fname = os.path.join(os.path.dirname(__file__),
                          'smos-test-data', 'L3_SMOS_IC', 'ASC', '2018',
                          'SM_RE06_MIR_CDF3SA_20180101T000000_20180101T235959_105_001_8.DBL.nc')
     assert os.path.isfile(fname)
+    assert xr.__version__ == '2022.11.0'
+    assert netCDF4.__version__ == "1.5.7"
+
     ds = xr.open_dataset(fname, engine='netcdf4')
     ds.close()
     with Dataset(fname) as ds:
