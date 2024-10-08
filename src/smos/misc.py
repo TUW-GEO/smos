@@ -57,7 +57,7 @@ def _get_first_and_last_file(path: str):
         last_month_path = last_year_path
         last_files = sorted(os.listdir(last_month_path))
 
-    return first_file, last_files[0] if last_files else None
+    return first_file, last_files[-1] if last_files else None
 
 
 def _get_date(f: str) -> t.Union[date, None]:
@@ -81,6 +81,6 @@ def get_first_last_day_images(img_path: str) -> (date, date):
 
 if __name__ == '__main__':
 
-    f, l = get_first_last_day_images("/home/wpreimes/shares/home/code/smos/tests/smos-test-data/L4_SMOS_RZSM/OPER")
-
+    f, l = get_first_last_day_images("/home/wpreimes/shares/climers/Projects/FRM4SM/07_data/SMOSL2/MIR_SMUDP2_nc")
+    print(f, l)
 
