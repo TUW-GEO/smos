@@ -48,6 +48,7 @@ jobs:
         with:
           auto-update-conda: true
           python-version: ${{ matrix.python-version }}
+          environment-file: environment.yml
           channel-priority: flexible
           activate-environment: smos
           auto-activate-base: false
