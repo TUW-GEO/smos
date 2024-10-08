@@ -52,7 +52,7 @@ def test_SMOS_IC_Img():
 
     ds = xr.open_dataset(fname, engine='netcdf4')
     ds.close()
-    
+
     ds = SMOS_IC_Img(fname, parameters=['Soil_Moisture'], read_flags=None)
     image = ds.read(datetime(2018, 1, 1))
     assert list(image.data.keys()) == ['Soil_Moisture']

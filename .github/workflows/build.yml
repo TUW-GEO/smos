@@ -32,6 +32,9 @@ jobs:
         with:
           submodules: true
           fetch-depth: 0
+          lfs: true
+      - name: Checkout LFS objects
+        run: git lfs checkout
       - uses: mamba-org/setup-micromamba@v2
         with:
           micromamba-version: "latest"
