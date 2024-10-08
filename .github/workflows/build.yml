@@ -36,7 +36,7 @@ jobs:
         with:
           micromamba-version: "latest"
           environment-file: environment.yml
-          create_args: python=${{ matrix.python-version }}
+          create-args: python=${{ matrix.python-version }}
           post-cleanup: "all"
           init-shell: >-
             bash
