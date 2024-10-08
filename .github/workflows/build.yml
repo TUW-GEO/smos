@@ -44,6 +44,7 @@ jobs:
       - name: Print environment infos
         shell: bash -l {0}
         run: |
+          ls -R tests/smos-test-data
           conda info -a
           which pip
           which python
@@ -54,6 +55,11 @@ jobs:
           mkdir -p artifacts
           filename=env_py${{ matrix.python-version }}_${{ matrix.os }}.yml
           conda env export --no-builds | grep -v "prefix" > artifacts/$filename
+      - name: Upload Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: Artifacts-py${{ matrix.python-version }}-${{ matrix.os }}
+          path: artifacts/*
       - name: Install base package and run tests
         shell: bash -l {0}
         run: |
@@ -81,11 +87,6 @@ jobs:
             python setup.py sdist --dist-dir artifacts/dist
           fi
           ls artifacts/dist
-      - name: Upload Artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: Artifacts-py${{ matrix.python-version }}-${{ matrix.os }}
-          path: artifacts/*
   coveralls:
     name: Submit Coveralls 👚
     needs: build
