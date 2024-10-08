@@ -39,7 +39,7 @@ def test_SMOS_IC_Img():
                          'smos-test-data', 'L3_SMOS_IC', 'ASC', '2018',
                          'SM_RE06_MIR_CDF3SA_20180101T000000_20180101T235959_105_001_8.DBL.nc')
     assert os.path.isfile(fname)
-    ds = xr.open_dataset(fname)
+    ds = xr.open_dataset(fname, engine='netCDF4')
     ds.close()
     with Dataset(fname) as ds:
         img = np.flipud(ds['Soil_Moisture'][:])
