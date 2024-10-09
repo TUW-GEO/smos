@@ -14,44 +14,67 @@ on:
 
 jobs:
   build:
-    name: Build py${{ matrix.python-version }} @ ${{ matrix.os }} 🐍
+    name: py${{ matrix.python-version }} @ ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        python-version: ['3.6', '3.7', '3.8', '3.9']
-        os: ["ubuntu-latest", "windows-latest"]
-
+        include:
+          - os: "ubuntu-latest"
+            python-version: '3.8'  # first supported
+#          - os: "windows-latest"
+#            python-version: '3.8'  # first supported
+          - os: "ubuntu-latest"
+            python-version: '3.12'  # latest supported
+          - os: "windows-latest"
+            python-version: '3.12'  # latest supported
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
         with:
           submodules: true
           fetch-depth: 0
-      - uses: conda-incubator/setup-miniconda@v2.0.1
+          lfs: true
+      - name: Checkout LFS objects
+        run: git lfs checkout
+#      - uses: mamba-org/setup-micromamba@v2
+#        with:
+#          micromamba-version: "latest"
+#          environment-file: environment.yml
+#          create-args: python=${{ matrix.python-version }}
+#          post-cleanup: "all"
+#          init-shell: >-
+#            bash
+#            powershell
+      - uses: conda-incubator/setup-miniconda@v3
         with:
-          miniconda-version: "latest"
           auto-update-conda: true
           python-version: ${{ matrix.python-version }}
           environment-file: environment.yml
+          channel-priority: flexible
           activate-environment: smos
           auto-activate-base: false
-      - name: Print environment infos
+      - name: Print Infos
         shell: bash -l {0}
         run: |
+          ls -R tests/smos-test-data
           conda info -a
-          conda list
-          pip list
           which pip
           which python
+          conda list
       - name: Export Environment
         shell: bash -l {0}
         run: |
-          mkdir -p .artifacts
+          mkdir -p artifacts
           filename=env_py${{ matrix.python-version }}_${{ matrix.os }}.yml
-          conda env export --no-builds | grep -v "prefix" > .artifacts/$filename
-      - name: Install package and test
+          conda env export --no-builds | grep -v "prefix" > artifacts/$filename
+      - name: Upload Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: Artifacts-py${{ matrix.python-version }}-${{ matrix.os }}
+          path: artifacts/*
+      - name: Install base package and run tests
         shell: bash -l {0}
         run: |
-          pip install .
+          pip install -e .[testing]
           pytest
       - name: Upload Coverage
         shell: bash -l {0}
@@ -69,17 +92,12 @@ jobs:
           then
             # build whls on windows
             pip install wheel
-            python setup.py bdist_wheel --dist-dir .artifacts/dist
+            python setup.py bdist_wheel --dist-dir artifacts/dist
           else
             # build dist on linux
-            python setup.py sdist --dist-dir .artifacts/dist
+            python setup.py sdist --dist-dir artifacts/dist
           fi
-          ls .artifacts/dist
-      - name: Upload Artifacts
-        uses: actions/upload-artifact@v2
-        with:
-          name: Artifacts
-          path: .artifacts/*
+          ls artifacts/dist
   coveralls:
     name: Submit Coveralls 👚
     needs: build
@@ -102,7 +120,11 @@ jobs:
           echo "GITHUB_REF = $GITHUB_REF"
           echo "GITHUB_REPOSITORY = $GITHUB_REPOSITORY"
       - name: Download Artifacts
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v4
+        with:
+          path: Artifacts
+          pattern: Artifacts-*
+          merge-multiple: true
       - name: Display downloaded files
         run: ls -aR
       - name: Upload to PyPI

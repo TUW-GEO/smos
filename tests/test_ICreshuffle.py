@@ -47,7 +47,7 @@ def test_SMOS_IC_reshuffle_global():
         assert len(glob.glob(os.path.join(ts_path, "*.nc"))) == 2449
         ds = SMOSTs(ts_path, ioclass_kws={'read_bulk': True}, drop_missing=False)
         ts = ds.read(-61.08069, -12.55398)  # this is the same point as in image test
-        assert ts['Quality_Flag'].dtype == np.float # because we dont drop missing
+        assert ts['Quality_Flag'].dtype == np.float64 # because we dont drop missing
         sm_values_should = np.array([0.198517, np.nan, np.nan], dtype=np.float32)
         nptest.assert_allclose(ts['Soil_Moisture'].values, sm_values_should, 4)
         ds.close()
@@ -61,24 +61,25 @@ def test_SMOS_IC_reshuffle_subset():
         enddate = '2018-01-03'
         bbox = ['-11', '34', '43', '71']
         args = [inpath, ts_path, startdate, enddate] + \
-               ['--only_good', 'True'] + ['--bbox', *bbox]
+               ['--only_good', 'False'] + ['--bbox', *bbox]
 
         main(args)
         assert len(glob.glob(os.path.join(ts_path, "*.nc"))) == 109
-        ds = SMOSTs(ts_path, ioclass_kws={'read_bulk': True}, index_add_time=True)
+        ds = SMOSTs(ts_path, ioclass_kws={'read_bulk': True}, index_add_time=True,
+                    drop_missing=True)
 
         ts = ds.read(20.36023, 47.682177)  # this is the same point as in image subset test
         assert ts.index[0] == ts.iloc[0]['_date'] + timedelta(seconds=int(ts.iloc[0]['UTC_Seconds']))
         timestamp0 = ts.index[0]
         nptest.assert_almost_equal(ts.loc[timestamp0, 'Soil_Moisture'], 0.31218335)
-        assert ts['Quality_Flag'].dtype == np.int
-        assert ts['Soil_Moisture'].dtype == np.float
+        assert np.issubdtype(ts['Quality_Flag'].dtype, np.integer)
+        assert np.issubdtype(ts['Soil_Moisture'].dtype, np.floating)
         ds.close()
-        ds = SMOSTs(ts_path, ioclass_kws={'read_bulk': True}, index_add_time=False)
-        ts = ds.read(-61.08069, -12.55398)  # this is the same point as in image test
-        assert np.isnan(ts.loc['2018-01-01', 'Soil_Moisture'])
-        assert ts.loc['2018-01-01', 'Quality_Flag'] == 2
-        ds.close()
+        ds = SMOSTs(ts_path, ioclass_kws={'read_bulk': True},
+                    index_add_time=False, drop_missing=False)
+        ts = ds.read(-4.7, 56.9)
+        nptest.assert_almost_equal(ts.loc['2018-01-01', 'Soil_Moisture'], 0.2196, 4)
+        assert ts.loc['2018-01-01', 'Quality_Flag'] == 1.0
+        assert np.isnan(ds.read(-4.7, 65)['Soil_Moisture'].iloc[0])
 
-if __name__ == '__main__':
-    test_SMOS_IC_reshuffle_global()
+        ds.close()

@@ -1,24 +1,25 @@
 name: smos
 channels:
+  - defaults
   - conda-forge
 dependencies:
-- numpy>=1.13.0
+- numpy>=1.13.0,<2
 - pandas
-- netcdf4
+- netCDF4!=1.6.2
+- hdf5
 - scipy
+- dask[distributed]
+- xarray
 - pyresample
-- ipykernel
 - pip
 - pip:
     - pygeobase
     - pygeogrids
     - pynetcf
-    - repurpose
+    - pyproj
+    - git+https://github.com/TUW-GEO/repurpose@master
     - trollsift
     - ease_grid
     - more_itertools
-    - sphinx==4.0.3  # https://github.com/spatialaudio/nbsphinx/issues/584, when this is resolved this line can be deleted to use the latest version.
-    - nbsphinx
-    - sphinx_rtd_theme
-    - pytest
-    - pytest-cov
+    - cf-xarray==0.8.4
+    - git+https://github.com/awst-austria/qa4sm-preprocessing@smos-package
