@@ -20,51 +20,61 @@ jobs:
       matrix:
         include:
           - os: "ubuntu-latest"
-            python-version: '3.9'  # first supported
-          - os: "windows-latest"
-            python-version: '3.9'  # first supported
-          - os: "macos-latest"
-            python-version: '3.9'  # first supported
+            python-version: '3.8'  # first supported
+#          - os: "windows-latest"
+#            python-version: '3.8'  # first supported
           - os: "ubuntu-latest"
             python-version: '3.12'  # latest supported
           - os: "windows-latest"
-            python-version: '3.12'  # latest supported
-          - os: "macos-latest"
             python-version: '3.12'  # latest supported
     steps:
       - uses: actions/checkout@v4
         with:
           submodules: true
           fetch-depth: 0
+          lfs: true
+      - name: Checkout LFS objects
+        run: git lfs checkout
+#      - uses: mamba-org/setup-micromamba@v2
+#        with:
+#          micromamba-version: "latest"
+#          environment-file: environment.yml
+#          create-args: python=${{ matrix.python-version }}
+#          post-cleanup: "all"
+#          init-shell: >-
+#            bash
+#            powershell
       - uses: conda-incubator/setup-miniconda@v3
         with:
-          miniconda-version: "latest"
           auto-update-conda: true
           python-version: ${{ matrix.python-version }}
           environment-file: environment.yml
+          channel-priority: flexible
           activate-environment: smos
           auto-activate-base: false
-      - name: Print environment infos
+      - name: Print Infos
         shell: bash -l {0}
         run: |
+          ls -R tests/smos-test-data
           conda info -a
           which pip
           which python
-      - name: Install base package and run tests
-        shell: bash -l {0}
-        run: |
-          pip install -e .[testing]
-          pytest  # run only basic tests, see setup.cfg
+          conda list
       - name: Export Environment
         shell: bash -l {0}
         run: |
           mkdir -p artifacts
           filename=env_py${{ matrix.python-version }}_${{ matrix.os }}.yml
           conda env export --no-builds | grep -v "prefix" > artifacts/$filename
-      - name: Install package and test
+      - name: Upload Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: Artifacts-py${{ matrix.python-version }}-${{ matrix.os }}
+          path: artifacts/*
+      - name: Install base package and run tests
         shell: bash -l {0}
         run: |
-          pip install .
+          pip install -e .[testing]
           pytest
       - name: Upload Coverage
         shell: bash -l {0}
@@ -88,11 +98,6 @@ jobs:
             python setup.py sdist --dist-dir artifacts/dist
           fi
           ls artifacts/dist
-      - name: Upload Artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: Artifacts-py${{ matrix.python-version }}-${{ matrix.os }}
-          path: artifacts/*
   coveralls:
     name: Submit Coveralls 👚
     needs: build

@@ -3,7 +3,7 @@ import os
 import yaml
 from qa4sm_preprocessing.level2.smos import SMOSL2Reader
 from smos.smos_l2.download import get_avail_img_range
-from datetime import datetime, timedelta
+from datetime import datetime
 
 def read_summary_yml(path: str) -> dict:
     """

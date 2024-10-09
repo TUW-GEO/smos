@@ -1,27 +1,25 @@
 name: smos
 channels:
-  - conda-forge
   - defaults
+  - conda-forge
 dependencies:
-- numpy<2
+- numpy>=1.13.0,<2
 - pandas
-- netcdf4
+- netCDF4!=1.6.2
+- hdf5
 - scipy
+- dask[distributed]
+- xarray
 - pyresample
-- dask
-- ipykernel
 - pip
 - pip:
     - pygeobase
     - pygeogrids
     - pynetcf
-    - repurpose
+    - pyproj
+    - git+https://github.com/TUW-GEO/repurpose@master
     - trollsift
     - ease_grid
     - more_itertools
-    - sphinx
-    - nbsphinx
-    - sphinx_rtd_theme
+    - cf-xarray==0.8.4
     - git+https://github.com/awst-austria/qa4sm-preprocessing@smos-package
-    - pytest
-    - pytest-cov

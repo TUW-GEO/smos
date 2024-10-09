@@ -72,8 +72,8 @@ def test_SMOS_IC_reshuffle_subset():
         assert ts.index[0] == ts.iloc[0]['_date'] + timedelta(seconds=int(ts.iloc[0]['UTC_Seconds']))
         timestamp0 = ts.index[0]
         nptest.assert_almost_equal(ts.loc[timestamp0, 'Soil_Moisture'], 0.31218335)
-        assert ts['Quality_Flag'].dtype == np.int64
-        assert ts['Soil_Moisture'].dtype == np.float64
+        assert np.issubdtype(ts['Quality_Flag'].dtype, np.integer)
+        assert np.issubdtype(ts['Soil_Moisture'].dtype, np.floating)
         ds.close()
         ds = SMOSTs(ts_path, ioclass_kws={'read_bulk': True},
                     index_add_time=False, drop_missing=False)

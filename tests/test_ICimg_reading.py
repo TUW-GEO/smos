@@ -36,9 +36,12 @@ def test_SMOS_IC_Img():
     fname = os.path.join(os.path.dirname(__file__),
                          'smos-test-data', 'L3_SMOS_IC', 'ASC', '2018',
                          'SM_RE06_MIR_CDF3SA_20180101T000000_20180101T235959_105_001_8.DBL.nc')
+    assert os.path.isfile(fname)
+
     ds = SMOS_IC_Img(fname, parameters=['Soil_Moisture'], read_flags=None)
     image = ds.read(datetime(2018, 1, 1))
     assert list(image.data.keys()) == ['Soil_Moisture']
+
     assert image.data['Soil_Moisture'].shape == (584, 1388)
     # test for correct masking --> point without data
     nptest.assert_almost_equal(image.lon[425, 1237], 140.9654, 4)
