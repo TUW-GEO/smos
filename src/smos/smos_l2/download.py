@@ -183,7 +183,7 @@ class SmosDissEoFtp:
         """
         path = self.ftp_root
         if subpath not in [None, '']:
-            path += '/' + str(subpath)
+            path = path / PurePosixPath(subpath)
         cmd = f"cls {path}"
         r = self.exec(cmd)
         lst = r.stdout.decode("utf-8").splitlines()
@@ -199,6 +199,22 @@ class SmosDissEoFtp:
                 data.append(d)
 
         return data
+
+    def last_available_day(self):
+        """
+        Get the latest available day on the server (incomplete directory).
+        We want to exclude this day from downloading.
+
+        Returns
+        -------
+        last_date:
+
+        """
+        last_year = [int(y.replace('/', '')) for y in self.list(filter='dir')][-1]
+        last_month = [int(m.replace('/', '')) for m in self.list(subpath=str(last_year), filter='dir')][-1]
+        last_day = [int(d.replace('/', '')) for d in self.list(subpath=f"{last_year}/{last_month:02}", filter='dir')][-1]
+
+        return datetime(last_year, last_month, last_day)
 
     def list_all_available_days(self, date_from=L2_START_DATE,
                                 date_to=datetime.now(), progressbar=True):
@@ -230,7 +246,7 @@ class SmosDissEoFtp:
         years = [int(y.replace('/', '')) for y in self.list(filter='dir')]
         years = [y for y in years if ((y >= date_from.year) and (y <= date_to.year))]
 
-        for year in tqdm(years, disable=not progressbar):
+        for year in tqdm(years, disable=not progressbar, description="Scanning FTP folder"):
             months = [int(m.replace('/', '')) for m in self.list(subpath=str(year), filter='dir')]
             if year == date_from.year:
                 months = [m for m in months if m >= date_from.month]
@@ -300,7 +316,8 @@ class SmosDissEoFtp:
     def sync_period(self, startdate, enddate, dry_run=False):
         """
         Synchronize SMOS L2 data between local root and FTP folder for days
-        in the passed time frame.
+        in the passed time frame. The last day on the server is usually not yet
+        complete (i.e. swath files are missing). This will NOT be synchronized.
 
         Parameters
         ----------

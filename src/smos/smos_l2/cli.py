@@ -1,5 +1,5 @@
 import click
-from datetime import datetime
+from datetime import datetime, timedelta
 import pandas as pd
 
 from smos.smos_l2.download import SmosDissEoFtp, L2_START_DATE, get_avail_img_range
@@ -20,9 +20,9 @@ from smos.smos_l2.reshuffle import swath2ts, extend_ts
 @click.option(
     '--enddate', '-e',
     type=click.STRING,
-    default=str(datetime.now().date()),
+    default=None,
     help="Enddate in format YYYY-MM-DD. If not given, "
-         "then the current date is used.")
+         "then the last full day on the server is used.")
 @click.option(
     "--username",
     type=click.STRING,
@@ -60,8 +60,11 @@ def cli_download(path,
 
     ftp = SmosDissEoFtp(path, username=username, password=password)
 
+    if enddate is None:
+        enddate = ftp.last_available_day() - timedelta(days=1)
+
     ftp.sync_period(startdate=pd.to_datetime(startdate).to_pydatetime(),
-                    enddate=pd.to_datetime(enddate).to_pydatetime())
+                    enddate=enddate)
 
 @click.command(
     "update_img",
@@ -90,7 +93,8 @@ def cli_update_img(path,
                    password):
     """
     Extend a locally existing SMOS L2 by downloading new files that
-    don't yet exist locally.
+    don't yet exist locally. The last day on the server is usually incomplete
+    and therefore ignored.
     NOTE: Before using this program, create an account at
     https://eoiam-idp.eo.esa.int and ideally store you credentials in the
     file $HOME/.smosapirc (to avoid passing them as plain text).
@@ -107,10 +111,10 @@ def cli_update_img(path,
     # display it properly on the command line.
 
     ftp = SmosDissEoFtp(path, username=username, password=password)
-
+    enddate = ftp.last_available_day() - timedelta(days=1)
     # in case there are any incomplete days
     ftp.sync_period(startdate=get_avail_img_range(path)[1],
-                    enddate=str(datetime.now().date()))
+                    enddate=str(enddate.date()))
 
 
 @click.command(
