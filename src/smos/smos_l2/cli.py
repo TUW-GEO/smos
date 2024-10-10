@@ -2,8 +2,9 @@ import click
 from datetime import datetime, timedelta
 import pandas as pd
 
-from smos.smos_l2.download import SmosDissEoFtp, L2_START_DATE, get_avail_img_range
+from smos.smos_l2.download import SmosDissEoFtp, L2_START_DATE
 from smos.smos_l2.reshuffle import swath2ts, extend_ts
+from smos.misc import get_first_last_day_images
 
 @click.command(
     "download",
@@ -113,7 +114,7 @@ def cli_update_img(path,
     ftp = SmosDissEoFtp(path, username=username, password=password)
     enddate = ftp.last_available_day() - timedelta(days=1)
     # in case there are any incomplete days
-    ftp.sync_period(startdate=get_avail_img_range(path)[1],
+    ftp.sync_period(startdate=get_first_last_day_images(path)[1],
                     enddate=str(enddate.date()))
 
 

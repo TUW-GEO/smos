@@ -1,6 +1,7 @@
 import os
 from tempfile import TemporaryDirectory
-from smos.smos_l2.reshuffle import swath2ts, extend_ts, read_summary_yml
+from smos.smos_l2.reshuffle import swath2ts, extend_ts
+from smos.misc import read_summary_yml
 from pynetcf.time_series import GriddedNcIndexedRaggedTs
 from pygeogrids.netcdf import load_grid
 import numpy as np
@@ -12,7 +13,7 @@ def test_reshuffle_and_update():
 
         assert os.path.isfile(os.path.join(ts_path, 'grid.nc'))
         props = read_summary_yml(ts_path)
-        assert props['enddate'] == '2022-01-02 00:00:00'
+        assert props['last_day'] == '2022-01-02'
 
         grid = load_grid(os.path.join(ts_path, 'grid.nc'))
         reader = GriddedNcIndexedRaggedTs(ts_path, grid=grid)
@@ -31,7 +32,7 @@ def test_reshuffle_and_update():
 
         extend_ts(img_path, ts_path)
         props = read_summary_yml(ts_path)
-        assert props['enddate'] == '2022-01-03 00:00:00'
+        assert props['last_day'] == '2022-01-03'
 
         reader = GriddedNcIndexedRaggedTs(ts_path, grid=grid)
 
@@ -47,6 +48,3 @@ def test_reshuffle_and_update():
         assert len(ts) == 2
 
         reader.close()
-
-if __name__ == '__main__':
-    test_reshuffle_and_update()
