@@ -28,6 +28,7 @@ import pandas as pd
 
 from pynetcf.time_series import GriddedNcOrthoMultiTs
 from pygeogrids.netcdf import load_grid
+import repurpose.resample as resamp
 
 from pygeobase.io_base import ImageBase, MultiTemporalImageBase
 from pygeobase.object_base import Image
@@ -40,7 +41,6 @@ from collections import OrderedDict
 
 
 class SMOSTs(GriddedNcOrthoMultiTs):
-
     _t0_vars = {'sec': 'UTC_Seconds', 'days': 'Days'}
     _t0_unit = 'days since 2000-01-01'
 
@@ -100,17 +100,16 @@ class SMOSTs(GriddedNcOrthoMultiTs):
             for v in self._t0_vars.values():
                 self.parameters.append(v)
 
-    def _to_datetime(self, df:pd.DataFrame) -> pd.DataFrame:
+    def _to_datetime(self, df: pd.DataFrame) -> pd.DataFrame:
         # convert Days and UTC_Seconds to actual datetimes
         units = self._t0_unit
 
         df['_date'] = df.index.values
 
         if (self._t0_vars['days'] not in df.columns) or \
-            (self._t0_vars['sec'] not in df.columns):
+                (self._t0_vars['sec'] not in df.columns):
             raise KeyError(f"Could not find {self._t0_vars['days']} or {self._t0_vars['sec']} "
                            f"in reshuffled data.")
-
 
         # days + (seconds / seconds per day)
         num = df[self._t0_vars['days']].dropna() + (df[self._t0_vars['sec']].dropna() / 86400.)
@@ -119,7 +118,7 @@ class SMOSTs(GriddedNcOrthoMultiTs):
         else:
             df.loc[num.index, '_datetime_UTC'] = \
                 pd.DatetimeIndex(num2date(num.values, units=units,
-                        calendar='standard', only_use_cftime_datetimes=False))
+                                          calendar='standard', only_use_cftime_datetimes=False))
 
         df = df.set_index('_datetime_UTC')
         df = df[df.index.notnull()]
@@ -246,10 +245,8 @@ class SMOSImg(ImageBase):
 
         return return_img, return_metadata
 
-
     def _read_img(self) -> (dict, dict):
         raise NotImplementedError
-
 
     def read(self, timestamp):
         """
@@ -336,7 +333,7 @@ class SMOSImg(ImageBase):
             ds.createVariable('lon', datatype='float64', dimensions=('lon',), zlib=True)
 
             ds.variables['timestamp'].setncatts({'long_name': 'timestamp',
-                                                'units': units})
+                                                 'units': units})
             ds.variables['lat'].setncatts({'long_name': 'latitude', 'units': 'Degrees_North',
                                            'valid_range': (-90, 90)})
             ds.variables['lon'].setncatts({'long_name': 'longitude', 'units': 'Degrees_East',
@@ -392,15 +389,18 @@ class SMOSDs(MultiTemporalImageBase):
     ----------
     data_path : str
         Path to the nc files
-    parameter : str or list, optional (default: None)
+    ioclass : object
+        reader class
+    parameters : str or list, optional (default: None)
         one or list of parameters to read, see SMOS documentation
         for more information (default: 'Soil_Moisture').
     flatten: bool, optional (default: False)
-        If set then the data is read into 1D arrays. This is used to e.g
+        If set then the data is read into 1D arrays. This is used to e.g.
         reshuffle the data.
     grid : pygeogrids.CellGrid, optional (default: EASE25CellGrid)
         Grid that the image data is organised on, by default the global EASE25
         grid is used.
+    filename_templ
     read_flags : tuple or None, optional (default: (0, 1))
         Filter values to read based on the selected QUALITY_FLAGS.
         Values for locations that are not assigned any of the here passed flags
@@ -408,14 +408,18 @@ class SMOSDs(MultiTemporalImageBase):
         locations are filtered out).
     float_fillval : float or None, optional (default: np.nan)
         Fill Value for masked pixels, this is only applied to float variables.
-        Therefore e.g. mask variables are never filled but use the fill value
+        Therefore, e.g. mask variables are never filled but use the fill value
         as in the data.
+    sub_path : str or list, optional. Default is '%Y'
+        path to the files stored in the subfolders. If listed, each subforlder
+        is a different element, e.g. ['%Y', '%m']
+    additional_kws : dict, optional. Default is None
+        additional keyword arguments for the ioclass reader
     """
-
 
     def __init__(self, data_path, ioclass, parameters=None, flatten=False,
                  grid=EASE25CellGrid(bbox=None), filename_templ=None,
-                 read_flags=(0, 1), float_fillval=np.nan, additional_kws=None):
+                 read_flags=(0, 1), float_fillval=np.nan, sub_path='%Y', additional_kws=None):
 
         ioclass_kws = {'parameters': parameters,
                        'flatten': flatten,
@@ -425,8 +429,6 @@ class SMOSDs(MultiTemporalImageBase):
 
         if additional_kws:
             ioclass_kws.update(additional_kws)
-
-        sub_path = ['%Y']
 
         super().__init__(data_path,
                          ioclass=ioclass,
