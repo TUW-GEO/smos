@@ -37,10 +37,10 @@ def load_dotrc(path=None) -> dict:
     config = {}
     with open(path) as f:
         for line in f.readlines():
-            if ":" in line:
-                k, v = line.strip().split(":", 1)
-                if k in ("disseo_username", "disseo_password"):
-                    config[k] = v.strip()
+            if "=" in line:
+                k, v = line.strip().split("=", 1)
+                if k in ("DISSEO_USERNAME", "DISSEO_PASSWORD"):
+                    config[k] = v.strip(f""" "'""""")
     return config
 
 
@@ -66,8 +66,8 @@ class SmosDissEoFtp:
         dotrc: str, optional (default: None)
             Path to the .smosapirc file containing the FTP username and password.
             If None, then the file is assumed to be at $HOME/.smosapirc
-                disseo_username: xxxx
-                disseo_password: xxxx
+                DISSEO_USERNAME=xxxx
+                DISSEO_PASSWORD=xxxx
             Create an account at https://eoiam-idp.eo.esa.int
         skip_lftp_verify: bool, optional (default: False)
             Skip checking if lftp is available (for testing).
@@ -84,9 +84,9 @@ class SmosDissEoFtp:
         if self.username is None or self.password is None:
             config = load_dotrc(dotrc)
             if self.username is None:
-                self.username = config['disseo_username']
+                self.username = config['DISSEO_USERNAME']
             if self.password is None:
-                self.password = config['disseo_password']
+                self.password = config['DISSEO_PASSWORD']
 
         if not skip_lftp_verify:
             self.verify_lftp_installed()
