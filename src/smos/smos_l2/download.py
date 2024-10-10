@@ -9,7 +9,8 @@ from tqdm import tqdm
 import pandas as pd
 from calendar import monthrange
 from pathlib import PurePosixPath
-from glob import glob
+from smos.misc import get_first_last_day_images
+import yaml
 
 L2_START_DATE = datetime(2010, 6, 1)
 
@@ -41,52 +42,6 @@ def load_dotrc(path=None) -> dict:
                 if k in ("disseo_username", "disseo_password"):
                     config[k] = v.strip()
     return config
-
-def get_avail_img_range(path) -> (datetime, datetime):
-    """
-    Derive first and last day (available folder) with data from the
-    local SMOS L2 data
-    Folder structure: $PATH/YEAR/MONTH/DAY/*.nc
-
-    Parameters
-    ----------
-    path: str
-        Local root path (contains annual folders)
-
-    Returns
-    -------
-    first_day: datetime
-        First day for which image data is available.
-    last_day: datetime
-        Last day for which data is available.
-    """
-    years = glob(os.path.join(path, '[0-9][0-9][0-9][0-9]'))
-    years = [int(os.path.basename(y)) for y in years]
-    years.sort()
-    if len(years) == 0:
-        raise ValueError(f"No SMOS L2 data found in {path}.")
-
-    first_year = years[0]
-    last_year = years[-1]
-
-    months = glob(os.path.join(path, str(last_year), '[0-9][0-9]'))
-    months = [int(os.path.basename(m)) for m in months]
-    months.sort()
-    if len(years) == 0:
-        raise ValueError(f"No SMOS L2 data found in {path}.")
-    first_month = months[0]
-    last_month = months[-1]
-
-    days = glob(os.path.join(path, str(last_year), f"{last_month:02}", '[0-9][0-9]'))
-    days = [int(os.path.basename(d)) for d in days]
-    days.sort()
-    if len(years) == 0:
-        raise ValueError(f"No SMOS L2 data found in {path}.")
-    first_day = days[0]
-    last_day = days[-1]
-
-    return (datetime(int(first_year), first_month, first_day),
-            datetime(int(last_year), last_month, last_day))
 
 
 class SmosDissEoFtp:
@@ -183,7 +138,7 @@ class SmosDissEoFtp:
         """
         path = self.ftp_root
         if subpath not in [None, '']:
-            path += '/' + str(subpath)
+            path = path / PurePosixPath(subpath)
         cmd = f"cls {path}"
         r = self.exec(cmd)
         lst = r.stdout.decode("utf-8").splitlines()
@@ -199,6 +154,22 @@ class SmosDissEoFtp:
                 data.append(d)
 
         return data
+
+    def last_available_day(self):
+        """
+        Get the latest available day on the server (incomplete directory).
+        We want to exclude this day from downloading.
+
+        Returns
+        -------
+        last_date:
+
+        """
+        last_year = [int(y.replace('/', '')) for y in self.list(filter='dir')][-1]
+        last_month = [int(m.replace('/', '')) for m in self.list(subpath=str(last_year), filter='dir')][-1]
+        last_day = [int(d.replace('/', '')) for d in self.list(subpath=f"{last_year}/{last_month:02}", filter='dir')][-1]
+
+        return datetime(last_year, last_month, last_day)
 
     def list_all_available_days(self, date_from=L2_START_DATE,
                                 date_to=datetime.now(), progressbar=True):
@@ -230,7 +201,7 @@ class SmosDissEoFtp:
         years = [int(y.replace('/', '')) for y in self.list(filter='dir')]
         years = [y for y in years if ((y >= date_from.year) and (y <= date_to.year))]
 
-        for year in tqdm(years, disable=not progressbar):
+        for year in tqdm(years, disable=not progressbar, description="Scanning FTP folder"):
             months = [int(m.replace('/', '')) for m in self.list(subpath=str(year), filter='dir')]
             if year == date_from.year:
                 months = [m for m in months if m >= date_from.month]
@@ -300,7 +271,8 @@ class SmosDissEoFtp:
     def sync_period(self, startdate, enddate, dry_run=False):
         """
         Synchronize SMOS L2 data between local root and FTP folder for days
-        in the passed time frame.
+        in the passed time frame. The last day on the server is usually not yet
+        complete (i.e. swath files are missing). This will NOT be synchronized.
 
         Parameters
         ----------
@@ -332,5 +304,16 @@ class SmosDissEoFtp:
                         dt = pd.Timestamp(dt).to_pydatetime()
                         r = self.sync(dt.year, dt.month, dt.day, dry_run=dry_run)
                         ret.append(r)
+
+        first_day, last_day = get_first_last_day_images(str(self.local_root))
+
+        props = dict(comment="DO NOT CHANGE THIS FILE MANUALLY! "
+                             "It is required by the automatic data update process.",
+                     first_day=str(first_day) if first_day is not None else None,
+                     last_day=str(last_day) if last_day is not None else None,
+                     last_update=str(datetime.now()))
+
+        with open(os.path.join(self.local_root, 'overview.yml'), 'w') as f:
+            yaml.dump(props, f, default_flow_style=False, sort_keys=False)
 
         return ret

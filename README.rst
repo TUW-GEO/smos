@@ -1,23 +1,26 @@
 ====
 SMOS
 ====
-.. image:: https://github.com/TUW-GEO/smos/workflows/Automated%20Tests/badge.svg?branch=master&event=push
+
+|ci| |cov| |pip| |doc| |doi|
+
+.. |ci| image:: https://github.com/TUW-GEO/smos/actions/workflows/build.yml/badge.svg?branch=master
    :target: https://github.com/TUW-GEO/smos/actions
 
-.. image:: https://coveralls.io/repos/github/TUW-GEO/smos/badge.svg?branch=master
-    :target: https://coveralls.io/github/TUW-GEO/smos?branch=master
+.. |cov| image:: https://coveralls.io/repos/github/TUW-GEO/smos/badge.svg?branch=master
+  :target: https://coveralls.io/github/TUW-GEO/smos?branch=master
 
-.. image:: https://badge.fury.io/py/smos.svg
+.. |pip| image:: https://badge.fury.io/py/smos.svg
     :target: http://badge.fury.io/py/smos
 
-.. image:: https://readthedocs.org/projects/smos/badge/?version=latest
+.. |doc| image:: https://readthedocs.org/projects/smos/badge/?version=latest
    :target: http://smos.readthedocs.org/
 
-.. image:: https://zenodo.org/badge/167011732.svg
+.. |doi| image:: https://zenodo.org/badge/167011732.svg
    :target: https://zenodo.org/badge/latestdoi/167011732
-   
 
-SMOS (Soil Moisture and Ocean Salinity) data readers and time series converter.
+
+SMOS (Soil Moisture and Ocean Salinity) data readers and time series conversion tools.
 
 Works great in combination with `pytesmo <https://github.com/TUW-GEO/pytesmo>`_.
 
@@ -25,10 +28,7 @@ Works great in combination with `pytesmo <https://github.com/TUW-GEO/pytesmo>`_.
 Documentation & Software Citation
 =================================
 To see the latest full documentation click on the docs badge at the top.
-
 To cite this package follow the Zenodo badge at the top and export the citation there.
-Be aware that this badge links to the latest package version. Additional information
-on DOI versioning can be found here: http://help.zenodo.org/#versioning
 
 Installation
 ============
@@ -88,6 +88,8 @@ added.
 
 - `SMOS IC <https://www.catds.fr/Products/Available-products-from-CEC-SM/SMOS-IC>`_: SMOS INRA-CESBIO (SMOS-IC) 25km
 - `SMOS L4 RZSM <https://www.catds.fr/Products/Available-products-from-CEC-SM/L4-Land-research-products>`_: SMOS CATDS-CESBIO (SMOS L4 RZSM) 25km
+- SMOS L2
+- SMOS L3
 
 Contribute
 ==========

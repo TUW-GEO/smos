@@ -2,19 +2,8 @@ import pandas as pd
 import os
 import yaml
 from qa4sm_preprocessing.level2.smos import SMOSL2Reader
-from smos.smos_l2.download import get_avail_img_range
+from smos.misc import read_summary_yml, get_first_last_day_images
 from datetime import datetime
-
-def read_summary_yml(path: str) -> dict:
-    """
-    Read image summary and return fields as dict.
-    """
-    path = os.path.join(path, 'overview.yml')
-
-    with open(path, 'r') as stream:
-        props = yaml.safe_load(stream)
-
-    return props
 
 
 def swath2ts(img_path, ts_path, startdate=None, enddate=None, memory=4):
@@ -40,7 +29,7 @@ def swath2ts(img_path, ts_path, startdate=None, enddate=None, memory=4):
     """
     reader = SMOSL2Reader(img_path)
 
-    first_day, last_day = get_avail_img_range(img_path)
+    first_day, last_day = get_first_last_day_images(img_path)
 
     start = pd.to_datetime(startdate).to_pydatetime() if startdate is not None else first_day
     end = pd.to_datetime(enddate).to_pydatetime() if enddate is not None else last_day
@@ -49,11 +38,13 @@ def swath2ts(img_path, ts_path, startdate=None, enddate=None, memory=4):
 
     if os.path.isfile(out_file):
         props = read_summary_yml(ts_path)
-        if start < pd.to_datetime(props['enddate']).to_pydatetime():
+        if start < pd.to_datetime(props['last_day']).to_pydatetime():
             raise ValueError("Cannot prepend data to time series, or replace "
                              "existing values. Choose different start date.")
 
-    props = {'enddate': str(end), 'last_update': str(datetime.now()),
+    props = {'comment': "DO NOT CHANGE THIS FILE MANUALLY! "
+                        "It is required by the automatic data update process.",
+             'last_day': str(end.date()), 'last_update': str(datetime.now()),
              'parameters': [str(v) for v in reader.varnames]}
 
     r = reader.repurpose(
@@ -72,7 +63,7 @@ def swath2ts(img_path, ts_path, startdate=None, enddate=None, memory=4):
 def extend_ts(img_path, ts_path, memory=4):
     """
     Append new image data to an existing time series record.
-    This will use the enddate from summary.yml in the time series
+    This will use the last_day from summary.yml in the time series
     directory to decide which date the update should start from and
     the available image directories to decide how many images can be
     appended.
@@ -95,26 +86,32 @@ def extend_ts(img_path, ts_path, memory=4):
                          f"series setup or provide overview.yml in {ts_path}.")
 
     props = read_summary_yml(ts_path)
-    startdate = pd.to_datetime(props['enddate']).to_pydatetime()
-    _, enddate = get_avail_img_range(img_path)
+    startdate = pd.to_datetime(props['last_day']).to_pydatetime()
+    _, last_day = get_first_last_day_images(img_path)
 
-    reader = SMOSL2Reader(img_path)
+    if startdate < pd.to_datetime(last_day).to_pydatetime():
 
-    print(f"From: {startdate}, To: {enddate}")
+        reader = SMOSL2Reader(img_path)
 
-    r = reader.repurpose(
-        outpath=ts_path,
-        start=startdate,
-        end=enddate,
-        memory=memory,
-        imgbaseconnection=True,
-        overwrite=False,
-        append=True,
-    )
+        print(f"Extent TimeSeries data From: {startdate}, To: {last_day}")
 
-    if r is not None:
-        props['enddate'] = str(enddate)
-        props['last_update'] = str(datetime.now())
+        r = reader.repurpose(
+            outpath=ts_path,
+            start=startdate,
+            end=last_day,
+            memory=memory,
+            imgbaseconnection=True,
+            overwrite=False,
+            append=True,
+        )
 
-        with open(out_file, 'w') as f:
-            yaml.dump(props, f, default_flow_style=False, sort_keys=False)
+        if r is not None:
+            props['last_day'] = str(last_day)
+            props['last_update'] = str(datetime.now())
+
+            with open(out_file, 'w') as f:
+                yaml.dump(props, f, default_flow_style=False, sort_keys=False)
+
+    else:
+        print(f"No extension required From: {startdate} To: {last_day}")
+

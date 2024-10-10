@@ -2,6 +2,7 @@ import pandas as pd
 import os
 from datetime import date
 import typing as t
+import yaml
 
 def _get_first_and_last_file(path: str):
     # Get list of all years (folders) in the path
@@ -70,17 +71,21 @@ def _get_date(f: str) -> t.Union[date, None]:
     return None
 
 
-def get_first_last_day_images(img_path: str) -> (date, date):
-
+def get_first_last_day_images(img_path: str) -> \
+        (t.Union[date, None], t.Union[date, None]):
     f, l = _get_first_and_last_file(img_path)
-    first_date = _get_date(f)
-    last_date = _get_date(l)
+    first_day = _get_date(f) if f is not None else f
+    last_day = _get_date(l) if l is not None else f
 
-    return first_date, last_date
+    return first_day, last_day
 
+def read_summary_yml(path: str) -> dict:
+    """
+    Read image summary and return fields as dict.
+    """
+    path = os.path.join(path, 'overview.yml')
 
-if __name__ == '__main__':
+    with open(path, 'r') as stream:
+        props = yaml.safe_load(stream)
 
-    f, l = get_first_last_day_images("/home/wpreimes/shares/climers/Projects/FRM4SM/07_data/SMOSL2/MIR_SMUDP2_nc")
-    print(f, l)
-
+    return props
