@@ -22,4 +22,4 @@ dependencies:
     - ease_grid
     - more_itertools
     - cf-xarray==0.8.4
-    - git+https://github.com/awst-austria/qa4sm-preprocessing@smos-package
+    - git+https://github.com/awst-austria/qa4sm-preprocessing@master
