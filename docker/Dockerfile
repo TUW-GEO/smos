@@ -24,8 +24,7 @@ RUN git clone --recursive $GIT_URL && \
 ARG MAMBA_DOCKERFILE_ACTIVATE=1
 
 RUN micromamba install -y -n base -c conda-forge python=3.12
-RUN micromamba update -y -n base -f smos/environment.yml
-RUN cd smos &&  pip install .
+RUN cd smos &&  micromamba update -y -n base -f environment.yml && pip install .
 
 RUN micromamba clean --all --yes
 
