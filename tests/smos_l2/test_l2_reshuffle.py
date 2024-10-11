@@ -1,4 +1,5 @@
 import os
+import pandas as pd
 from tempfile import TemporaryDirectory
 from smos.smos_l2.reshuffle import swath2ts, extend_ts
 from smos.misc import read_summary_yml
@@ -13,7 +14,7 @@ def test_reshuffle_and_update():
 
         assert os.path.isfile(os.path.join(ts_path, 'grid.nc'))
         props = read_summary_yml(ts_path)
-        assert props['last_day'] == '2022-01-02'
+        assert pd.to_datetime(props['last_day']) == pd.to_datetime('2022-01-02')
 
         grid = load_grid(os.path.join(ts_path, 'grid.nc'))
         reader = GriddedNcIndexedRaggedTs(ts_path, grid=grid)
@@ -32,7 +33,7 @@ def test_reshuffle_and_update():
 
         extend_ts(img_path, ts_path)
         props = read_summary_yml(ts_path)
-        assert props['last_day'] == '2022-01-03'
+        assert pd.to_datetime(props['last_day']) == pd.to_datetime('2022-01-03')
 
         reader = GriddedNcIndexedRaggedTs(ts_path, grid=grid)
 

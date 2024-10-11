@@ -51,8 +51,8 @@ def swath2ts(img_path, ts_path, startdate=None, enddate=None, memory=4):
 
     r = reader.repurpose(
         outpath=ts_path,
-        start=str(start),
-        end=str(end),
+        start=start,
+        end=end,
         memory=memory,
         overwrite=False,
         imgbaseconnection=True,
