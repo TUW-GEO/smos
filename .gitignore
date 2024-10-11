@@ -51,5 +51,5 @@ MANIFEST
 .venv*/
 
 #other
-docker/build.log
+docker_build.log
 */local_scripts/*

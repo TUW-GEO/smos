@@ -91,6 +91,23 @@ added.
 - SMOS L2
 - SMOS L3
 
+Build Docker image
+==================
+- Check out the repo at the branch/tag/commit you want bake into the image
+- Make sure you have docker installed and run the command (replace the tag `latest`
+with something more meaningful, e.g. a version number)
+
+.. code::
+
+    docker build -t smos:latest . 2>&1 | tee docker_build.log
+
+This will execute the commands from the Dockerfile. I.e. install a new environment
+from the environment.yml file and install the checked out version of the smos
+package.
+
+To build and publish the image online, we have a GitHub Actions workflow in
+``.github/workflows/docker.yml``
+
 Contribute
 ==========
 

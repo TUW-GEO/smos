@@ -3,9 +3,6 @@ MAINTAINER Wolfgang Preimesberger <wolfgang.preimesberger@geo.tuwien.ac.at>
 
 USER root
 
-ARG GIT_BRANCH_TAG_COMMIT
-ARG GIT_URL
-
 RUN apk update && \
     apk upgrade && \
     apk add git && \
@@ -16,15 +13,14 @@ RUN apk update && \
 
 RUN apk add lftp
 
-# Check out the SMECV code at the chose tag using your credentials
-RUN git clone --recursive $GIT_URL && \
-    cd smos && \
-    git checkout $GIT_BRANCH_TAG_COMMIT
+WORKDIR /app
+
+COPY . /app
 
 ARG MAMBA_DOCKERFILE_ACTIVATE=1
 
 RUN micromamba install -y -n base -c conda-forge python=3.12
-RUN micromamba install -y -n base -f smos/environment.yml && pip install smos/.
+RUN micromamba install -y -n base -f /app/environment.yml && pip install /app/.
 
 RUN micromamba clean --all --yes
 
