@@ -38,7 +38,8 @@ Before installing this package via pip, please install the necessary
 
 .. code::
 
-    $ conda install -c conda-forge netcdf4 pyresample
+    $ conda create -n smos python=3.12
+    $ conda env update -f environment.yml -n smos
 
 
 Then
@@ -86,9 +87,9 @@ Supported Products
 Currently the following products are supported, additional products can be
 added.
 
-- `SMOS IC <https://www.catds.fr/Products/Available-products-from-CEC-SM/SMOS-IC>`_: SMOS INRA-CESBIO (SMOS-IC) 25km
-- `SMOS L4 RZSM <https://www.catds.fr/Products/Available-products-from-CEC-SM/L4-Land-research-products>`_: SMOS CATDS-CESBIO (SMOS L4 RZSM) 25km
-- SMOS L2
+- `SMOS IC <https://www.catds.fr/Products/Available-products-from-CEC-SM/SMOS-IC>`_: SMOS INRA-CESBIO (SMOS-IC) 25 km
+- `SMOS L4 RZSM <https://www.catds.fr/Products/Available-products-from-CEC-SM/L4-Land-research-products>`_: SMOS CATDS-CESBIO (SMOS L4 RZSM) 25 km
+- `SMOS L2 Science Product <https://earth.esa.int/eogateway/catalog/smos-science-products>`_: SMOS L2 Science Products (MIR_SMUDP2) 25 km
 - SMOS L3
 
 Build Docker image
