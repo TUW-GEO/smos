@@ -34,6 +34,9 @@ def swath2ts(img_path, ts_path, startdate=None, enddate=None, memory=4):
     start = pd.to_datetime(startdate).to_pydatetime() if startdate is not None else first_day
     end = pd.to_datetime(enddate).to_pydatetime() if enddate is not None else last_day
 
+    if start is None or end is None:
+        raise ValueError("No start and/or end date provided.")
+
     out_file = os.path.join(ts_path, f"overview.yml")
 
     if os.path.isfile(out_file):
@@ -44,13 +47,13 @@ def swath2ts(img_path, ts_path, startdate=None, enddate=None, memory=4):
 
     props = {'comment': "DO NOT CHANGE THIS FILE MANUALLY! "
                         "It is required by the automatic data update process.",
-             'last_day': str(end.date()), 'last_update': str(datetime.now()),
+             'last_day': str(end), 'last_update': str(datetime.now()),
              'parameters': [str(v) for v in reader.varnames]}
 
     r = reader.repurpose(
         outpath=ts_path,
-        start=start,
-        end=end,
+        start=str(start),
+        end=str(end),
         memory=memory,
         overwrite=False,
         imgbaseconnection=True,
@@ -89,6 +92,9 @@ def extend_ts(img_path, ts_path, memory=4):
     startdate = pd.to_datetime(props['last_day']).to_pydatetime()
     _, last_day = get_first_last_day_images(img_path)
 
+    if startdate is None or last_day is None:
+        raise ValueError("No start and/or end date provided.")
+
     if startdate < pd.to_datetime(last_day).to_pydatetime():
 
         reader = SMOSL2Reader(img_path)
@@ -97,8 +103,8 @@ def extend_ts(img_path, ts_path, memory=4):
 
         r = reader.repurpose(
             outpath=ts_path,
-            start=startdate,
-            end=last_day,
+            start=str(startdate),
+            end=str(last_day),
             memory=memory,
             imgbaseconnection=True,
             overwrite=False,
