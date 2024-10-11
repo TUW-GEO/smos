@@ -307,8 +307,7 @@ class SmosDissEoFtp:
 
         first_day, last_day = get_first_last_day_images(str(self.local_root))
 
-        props = dict(comment="DO NOT CHANGE THIS FILE MANUALLY! "
-                             "It is required by the automatic data update process.",
+        props = dict(comment="DO NOT CHANGE THIS FILE MANUALLY! Required for data update.",
                      first_day=str(first_day) if first_day is not None else None,
                      last_day=str(last_day) if last_day is not None else None,
                      last_update=str(datetime.now()))

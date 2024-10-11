@@ -45,8 +45,7 @@ def swath2ts(img_path, ts_path, startdate=None, enddate=None, memory=4):
             raise ValueError("Cannot prepend data to time series, or replace "
                              "existing values. Choose different start date.")
 
-    props = {'comment': "DO NOT CHANGE THIS FILE MANUALLY! "
-                        "It is required by the automatic data update process.",
+    props = {'comment': "DO NOT CHANGE THIS FILE MANUALLY! Required for data update.",
              'last_day': str(end), 'last_update': str(datetime.now()),
              'parameters': [str(v) for v in reader.varnames]}
 
@@ -95,7 +94,10 @@ def extend_ts(img_path, ts_path, memory=4):
     if startdate is None or last_day is None:
         raise ValueError("No start and/or end date provided.")
 
-    if startdate < pd.to_datetime(last_day).to_pydatetime():
+    startdate = pd.to_datetime(startdate).to_pydatetime()
+    last_day = pd.to_datetime(last_day).to_pydatetime()
+
+    if startdate < last_day:
 
         reader = SMOSL2Reader(img_path)
 
@@ -103,8 +105,8 @@ def extend_ts(img_path, ts_path, memory=4):
 
         r = reader.repurpose(
             outpath=ts_path,
-            start=str(startdate),
-            end=str(last_day),
+            start=startdate,
+            end=last_day,
             memory=memory,
             imgbaseconnection=True,
             overwrite=False,
