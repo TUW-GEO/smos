@@ -25,6 +25,6 @@ RUN micromamba install -y -n base -f /app/environment.yml && pip install /app/.
 RUN micromamba clean --all --yes
 
 # Clean up the src code, as it is installed now
-RUN rm -rf smos
+RUN rm -rf /app
 
 ENTRYPOINT ["/usr/local/bin/_entrypoint.sh"]
