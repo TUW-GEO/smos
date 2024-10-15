@@ -12,6 +12,10 @@ on:
   schedule:
     - cron: '0 0 * * *' # daily
 
+env:  # Required to upload docker image
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+
 jobs:
   build:
     name: py${{ matrix.python-version }}@${{ matrix.os }}
@@ -55,11 +59,6 @@ jobs:
           mkdir -p artifacts
           filename=env_py${{ matrix.python-version }}_${{ matrix.os }}.yml
           conda env export --no-builds | grep -v "prefix" > artifacts/$filename
-      - name: Upload Artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: Artifacts-py${{ matrix.python-version }}-${{ matrix.os }}
-          path: artifacts/*
       - name: Install base package and run tests
         shell: bash -l {0}
         run: |
@@ -87,6 +86,11 @@ jobs:
             python setup.py sdist --dist-dir artifacts/dist
           fi
           ls artifacts/dist
+      - name: Upload Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: Artifacts-py${{ matrix.python-version }}-${{ matrix.os }}
+          path: artifacts/*
 
   publish-coverage:
     name: Publish Coverage 👚
