@@ -1,7 +1,7 @@
 import os
 import pandas as pd
 from tempfile import TemporaryDirectory
-from smos.smos_l2.reshuffle import swath2ts, extend_ts
+from smos.smos_l2.reshuffle import swath2ts, extend_ts, _default_variables
 from smos.misc import read_summary_yml
 from pynetcf.time_series import GriddedNcIndexedRaggedTs
 from pygeogrids.netcdf import load_grid
@@ -42,6 +42,11 @@ def test_reshuffle_and_update():
             ts.loc['2022-01-02', 'Soil_Moisture'].values[0],
             0.52442, 5
         )
+        for var in _default_variables:
+            assert var in ts.columns
+
+        assert 'Overpass' in ts.columns
+
         assert 1 in ts.index.day
         assert 2 in ts.index.day
         assert 3 not in ts.index.day  # this must be excluded

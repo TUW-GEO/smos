@@ -3,7 +3,7 @@ from datetime import datetime, timedelta
 import pandas as pd
 
 from smos.smos_l2.download import SmosDissEoFtp, L2_START_DATE
-from smos.smos_l2.reshuffle import swath2ts, extend_ts
+from smos.smos_l2.reshuffle import swath2ts, extend_ts, _default_variables
 from smos.misc import get_first_last_day_images
 
 @click.command(
@@ -139,13 +139,21 @@ def cli_update_img(path,
     help="Format YYYY-MM-DD | Last day to include in the"
     "time series. [default: Date of the last available image]")
 @click.option(
+    '--variables',
+    '-v',
+    type=click.STRING,
+    default=','.join(_default_variables),
+    help="List of variables in the swath files to reshuffle. Multiple variables"
+         " must be comma-separated.")
+@click.option(
     '--memory',
     '-m',
     type=click.INT,
     default=4,
     help="NUMBER | Available memory (in GB) to use to load image data. "
     "A larger buffer means faster processing.")
-def cli_reshuffle(img_path, ts_path, startdate, enddate, memory):
+def cli_reshuffle(img_path, ts_path, startdate, enddate, variables,
+                  memory):
     """
     Convert SMOS L2 image data into a (5x5 degrees chunked) time series format
     following CF conventions (Indexed Ragged format).
@@ -158,8 +166,8 @@ def cli_reshuffle(img_path, ts_path, startdate, enddate, memory):
     Required Parameters
     -------------------
     IMG_PATH: string
-        Path where previously downloaded C3S SM images are stored. Use the
-        `c3s_sm download` command to retrieve image data.
+        Path where previously downloaded SMOS images are stored. Use the
+        `smos_l2 download` command to retrieve image data.
     TS_PATH: string
         Path where the newly created time series files should be stored.
     """
@@ -167,9 +175,12 @@ def cli_reshuffle(img_path, ts_path, startdate, enddate, memory):
     # display it properly on the command line.
     print(f"Convert image data in {img_path} to time series in {ts_path}")
 
+    variables = [str(v.strip()) for v in variables.split(',')]
+
     swath2ts(
         img_path,
         ts_path,
+        variables=variables,
         startdate=startdate,
         enddate=enddate,
         memory=int(memory))
@@ -193,7 +204,7 @@ def cli_update_ts(img_path, ts_path):
     Required Parameters
     -------------------
     IMG_PATH: string
-        Path where previously downloaded C3S SM images are stored.
+        Path where previously downloaded SMOS files are stored.
     TS_PATH: string
         Path where the time series to update are stored
     """
