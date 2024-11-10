@@ -153,10 +153,3 @@ def extend_ts(img_path, ts_path, memory=4):
 
     else:
         print(f"No extension required From: {startdate} To: {last_day}")
-
-if __name__ == '__main__':
-    ts_path = '/tmp/ts'
-    img_path = "/home/wpreimes/shares/climers/Projects/QA4SM_HR/07_data/SERVICE_DATA/SMOS_L2/SMOSL2_v700-ext/images"
-    # swath2ts(img_path,
-    #          ts_path=ts_path, startdate='2024-03-01', enddate='2024-03-05')
-    extend_ts(img_path, ts_path)
