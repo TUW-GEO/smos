@@ -1,3 +1,4 @@
+import numpy as np
 import pandas as pd
 import os
 import yaml
@@ -5,8 +6,19 @@ from qa4sm_preprocessing.level2.smos import SMOSL2Reader
 from smos.misc import read_summary_yml, get_first_last_day_images
 from datetime import datetime
 
+_default_variables = (
+    "Soil_Moisture",
+    "Science_Flags",
+    "Confidence_Flags",
+    "Chi_2_P",
+    "RFI_Prob",
+    "N_RFI_X",
+    "N_RFI_Y",
+    "M_AVA0",
+)
 
-def swath2ts(img_path, ts_path, startdate=None, enddate=None, memory=4):
+def swath2ts(img_path, ts_path, variables=_default_variables,
+             startdate=None, enddate=None, memory=4):
     """
     Convert SMOS L2 swath data to time series in IndexedRaggedTs format.
 
@@ -17,6 +29,19 @@ def swath2ts(img_path, ts_path, startdate=None, enddate=None, memory=4):
         swath data are found.
     ts_path: str
         Local directory where the converted time series data will be stored.
+    variables: tuple or str, optional (default: None)
+        List of variables to include, None will use the default variables
+        "Soil_Moisture",
+        "Soil_Moisture_DQX",
+        "Science_Flags",
+        "Confidence_Flags",
+        "Processing_Flags",
+        "Chi_2_P",
+        "RFI_Prob",
+        "N_RFI_X",
+        "N_RFI_Y",
+        "M_AVA0",
+        "acquisition_time"
     startdate: str or datetime, optional (default: None)
         First day of the available swath data that should be included in the
         time series. If None is passed, then the first available day is used.
@@ -27,7 +52,13 @@ def swath2ts(img_path, ts_path, startdate=None, enddate=None, memory=4):
         Size of available memory in GB. More memory will lead to a faster
         conversion.
     """
-    reader = SMOSL2Reader(img_path)
+    variables = [v for v in np.atleast_1d(variables)]
+
+    if "acquisition_time" not in variables:
+        variables.append("acquisition_time")
+
+    reader = SMOSL2Reader(img_path, varnames=variables,
+                          add_overpass_flag=True)
 
     first_day, last_day = get_first_last_day_images(img_path)
 
@@ -122,4 +153,3 @@ def extend_ts(img_path, ts_path, memory=4):
 
     else:
         print(f"No extension required From: {startdate} To: {last_day}")
-

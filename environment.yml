@@ -17,9 +17,9 @@ dependencies:
     - pygeogrids
     - pynetcf
     - pyproj
-    - git+https://github.com/TUW-GEO/repurpose@master
+    - repurpose>=0.13.1
     - trollsift
     - ease_grid
     - more_itertools
     - cf-xarray==0.8.4
-    - git+https://github.com/awst-austria/qa4sm-preprocessing@master
+    - qa4sm_preprocessing==0.3

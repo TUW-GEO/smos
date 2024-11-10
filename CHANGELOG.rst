@@ -2,6 +2,10 @@
 Changelog
 =========
 
+v0.3.1
+======
+- Changed the default variables reshuffled for SMOS L2 and added option to select variables
+
 v0.3.0
 ======
 - Add support for SMOS L4 RZSM product (`PR #11 <https://github.com/TUW-GEO/smos/pull/11>`_)
