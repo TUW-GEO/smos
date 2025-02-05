@@ -2,6 +2,10 @@
 Changelog
 =========
 
+v0.3.2
+======
+- Fixed a bug that led to failing SMOS L2 downloads
+
 v0.3.1
 ======
 - Changed the default variables reshuffled for SMOS L2 and added option to select variables
