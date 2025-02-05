@@ -295,7 +295,7 @@ class SmosDissEoFtp:
         ret = []
 
         for year, ys in df.groupby(df.index.year):
-            for month, ms in ys.groupby(df.index.month):
+            for month, ms in ys.groupby(ys.index.month):
                 if len(ms) == monthrange(year, month)[1]:  # complete month (fast)
                     r = self.sync(int(year), int(month), day=None, dry_run=dry_run)
                     ret.append(r)
