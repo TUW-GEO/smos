@@ -13,7 +13,7 @@ img_path = os.path.join(
 
 
 def test_reshuffle_and_update():
-    with TemporaryDirectory(suffix='all_gpis', delete=False) as ts_path:
+    with TemporaryDirectory() as ts_path:
         print(ts_path)
         swath2ts(img_path,
                  ts_path,
@@ -65,8 +65,8 @@ def test_reshuffle_and_update():
 
 
 def test_reshuffle_only_land_and_all_gpis():
-    with TemporaryDirectory(suffix='all_gpis', delete=False) as ts_path_all, \
-        TemporaryDirectory(suffix='only_land', delete=False) as ts_path_land:
+    with TemporaryDirectory() as ts_path_all, \
+        TemporaryDirectory() as ts_path_land:
 
         swath2ts(img_path,
                  ts_path_all,
