@@ -2,6 +2,13 @@
 Changelog
 =========
 
+Unreleased changes in master branch
+===================================
+- pass only_land bool to SMOSL2Reader in qa4sm-preprocessing
+- add only_land option to L4 grid creation and reshuffling
+- Add Grid_Point_Mask_USGS.nc to be used for masking (Geo2d mask)
+- Add ipynb scripts to convert regular global grid.nc to flat land masked grid.nc for smos ic and smos l3
+
 v0.3.2
 ======
 - Fixed a bug that led to failing SMOS L2 downloads
