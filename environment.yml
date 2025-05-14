@@ -22,4 +22,4 @@ dependencies:
     - ease_grid
     - more_itertools
     - cf-xarray==0.8.4
-    - qa4sm_preprocessing==0.3
+    - qa4sm_preprocessing
