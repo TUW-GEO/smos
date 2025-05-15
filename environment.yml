@@ -21,5 +21,5 @@ dependencies:
     - trollsift
     - ease_grid
     - more_itertools
-    - cf-xarray==0.8.4
-    - qa4sm_preprocessing
+    - cf-xarray
+    - qa4sm_preprocessing>=0.5
