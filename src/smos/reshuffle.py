@@ -136,6 +136,9 @@ def parse_args(args):
                         help=("How many images to read at once. Bigger "
                               "numbers make the conversion faster but "
                               "consume more memory. Default: 100."))
+    
+    parser.add_argument("--only_land", type=str2bool, default='False',
+                        help=("Use only land points for the reshuffle. Default: False"))
 
     args = parser.parse_args(args)
 

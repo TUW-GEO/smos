@@ -29,11 +29,10 @@ from smos.smos_l4.reshuffle_l4 import main
 import glob
 from smos.interface import SMOSTs
 
-
-def test_SMOS_L4_reshuffle_global():
-    inpath = os.path.join(os.path.dirname(os.path.abspath(__file__)),
+inpath = os.path.join(os.path.dirname(os.path.abspath(__file__)),
                           "smos-test-data", "L4_SMOS_RZSM", "SCIE")
 
+def test_SMOS_L4_reshuffle_global():
     with tempfile.TemporaryDirectory() as ts_path:
         startdate = '2018-01-01'  # 1 day is missing, should be filled with nans
         enddate = '2018-01-03'
@@ -52,6 +51,27 @@ def test_SMOS_L4_reshuffle_global():
         ds.close()
 
 
+def test_SMOS_L4_reshuffle_land_only():
+    with tempfile.TemporaryDirectory() as ts_path_land:
+        startdate = '2018-01-01'
+        enddate = '2018-01-03'
+        parameters = ["--parameters", "RZSM", "QUAL"]
+        args_land = [inpath, ts_path_land, startdate, enddate] + \
+                   parameters + ['--only_good', 'False'] + ['--only_land', 'True']
+
+        main(args_land)
+        assert len(glob.glob(os.path.join(ts_path_land, "*.nc"))) == 1134
+        # Test a known land point
+        ds = SMOSTs(ts_path_land, ioclass_kws={'read_bulk': True}, drop_missing=False)
+        ts = ds.read(26.2, 6.3) 
+        timestamp0 = ts.index[0]
+        nptest.assert_almost_equal(ts.loc[timestamp0, 'RZSM'], 0.337183, 4)
+        assert ts['QUAL'].dtype == float
+        assert ts['RZSM'].dtype == float
+        ds.close()
+
+
+
 def test_SMOS_L4_reshuffle_subset():
     inpath = os.path.join(os.path.dirname(os.path.abspath(__file__)),
                           "smos-test-data", "L4_SMOS_RZSM", "SCIE")
@@ -60,7 +80,7 @@ def test_SMOS_L4_reshuffle_subset():
         enddate = '2018-01-03'
         bbox = ['-11', '34', '43', '71']
         args = [inpath, ts_path, startdate, enddate] + \
-               ['--only_good', 'False'] + ['--bbox', *bbox]
+               ['--only_good', 'False'] + ['--bbox', *bbox]# + ['--only_land', 'True']
 
         main(args)
         assert len(glob.glob(os.path.join(ts_path, "*.nc"))) == 109

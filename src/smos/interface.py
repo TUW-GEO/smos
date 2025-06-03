@@ -219,7 +219,7 @@ class SMOSImg(ImageBase):
                                         'institution', 'creation_time')):
         return {k: v for k, v in self.glob_attrs.items() if k not in exclude}
 
-    def _read_empty(self):
+    def _read_empty(self) -> (dict, dict):
         """
         Create an empty image for filling missing dates, this is necessary
         for reshuffling as img2ts cannot handle missing days.
@@ -238,9 +238,16 @@ class SMOSImg(ImageBase):
             rows, cols = self.grid.subset_shape
         except AttributeError:
             rows, cols = self.grid.shape
+        except ValueError:
+            # Flat grid case
+            rows = self.grid.subset_shape
+            cols = None
+        
+        # Create shape based on grid type
+        shape = rows if cols is None else (rows, cols)
 
-        for param in self.parameters:
-            data = np.full((rows, cols), np.nan)
+        for param in self.parameters: 
+            data = np.full(shape, np.nan)
             return_img[param] = data.flatten()
             return_metadata[param] = {'image_missing': 1}
 

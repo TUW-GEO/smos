@@ -71,9 +71,9 @@ def test_SMOSL4_Img_flatten():
     nptest.assert_almost_equal(image.lon[(584 - 426) * 1388 + 1237], 140.9654, 4)
     assert np.isnan(image.data['RZSM'][425 * 1388 + 1237])
     # test for correct masking --> point with data
-    nptest.assert_almost_equal(image.lon[(584 - 356) * 1388 + 458], -61.08069, 4)
-    nptest.assert_almost_equal(image.lat[(584 - 356) * 1388 + 458], -12.55398, 4)
-    nptest.assert_almost_equal(image.data['RZSM'][(584 - 356) * 1388 + 458], 0.163186, 4)
+    nptest.assert_almost_equal(image.lon[(584 - 505) * 1388 + 420], -70.936599, 4)
+    nptest.assert_almost_equal(image.lat[(584 - 505) * 1388 + 420], -46.537532, 4)
+    nptest.assert_almost_equal(image.data['RZSM'][(584 - 505) * 1388 + 420], 0.104644, 4)
 
     metadata_keys = [u'_FillValue',
                      u'long_name',
@@ -96,9 +96,9 @@ def test_SMOSL4_DS():
     nptest.assert_almost_equal(image.lat[469, 973], -37.35189, 4)
     assert np.isnan(image.data['RZSM'][469, 973])
     # test for correct masking --> point with data
-    nptest.assert_almost_equal(image.lon[355, 458], -61.08069, 4)
-    nptest.assert_almost_equal(image.lat[355, 458], -12.55398, 4)
-    nptest.assert_almost_equal(image.data['RZSM'][355, 458], 0.163186, 4)
+    nptest.assert_almost_equal(image.lon[150, 285], -105.9510086, 4)
+    nptest.assert_almost_equal(image.lat[150, 285], 28.9435427, 4)
+    nptest.assert_almost_equal(image.data['RZSM'][150, 285], 0.12537476, 4)
 
     metadata_keys = [u'_FillValue',
                      u'long_name',

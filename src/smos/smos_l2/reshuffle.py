@@ -18,7 +18,7 @@ _default_variables = (
 )
 
 def swath2ts(img_path, ts_path, variables=_default_variables,
-             startdate=None, enddate=None, memory=4):
+             startdate=None, enddate=None, memory=4, only_land=False):
     """
     Convert SMOS L2 swath data to time series in IndexedRaggedTs format.
 
@@ -58,7 +58,7 @@ def swath2ts(img_path, ts_path, variables=_default_variables,
         variables.append("acquisition_time")
 
     reader = SMOSL2Reader(img_path, varnames=variables,
-                          add_overpass_flag=True)
+                          add_overpass_flag=True, only_land=only_land)
 
     first_day, last_day = get_first_last_day_images(img_path)
 
@@ -93,7 +93,7 @@ def swath2ts(img_path, ts_path, variables=_default_variables,
         with open(out_file, 'w') as f:
             yaml.dump(props, f, default_flow_style=False, sort_keys=False)
 
-def extend_ts(img_path, ts_path, memory=4):
+def extend_ts(img_path, ts_path, memory=4, only_land=False):
     """
     Append new image data to an existing time series record.
     This will use the last_day from summary.yml in the time series
@@ -130,7 +130,7 @@ def extend_ts(img_path, ts_path, memory=4):
 
     if startdate < last_day:
 
-        reader = SMOSL2Reader(img_path)
+        reader = SMOSL2Reader(img_path, only_land=only_land)
 
         print(f"Extent TimeSeries data From: {startdate}, To: {last_day}")
 

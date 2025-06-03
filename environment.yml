@@ -3,7 +3,7 @@ channels:
   - defaults
   - conda-forge
 dependencies:
-- numpy>=1.13.0,<2
+- numpy
 - pandas
 - netCDF4!=1.6.2
 - hdf5
@@ -21,5 +21,5 @@ dependencies:
     - trollsift
     - ease_grid
     - more_itertools
-    - cf-xarray==0.8.4
-    - qa4sm_preprocessing==0.3
+    - cf-xarray
+    - qa4sm_preprocessing>=0.5

@@ -101,7 +101,8 @@ def main(args):
     """
     args = parse_args(args)
 
-    input_grid = EASE25CellGrid(bbox=tuple(args.bbox) if args.bbox is not None else None)
+    input_grid = EASE25CellGrid(bbox=tuple(args.bbox) if args.bbox is not None else None,
+                               only_land=args.only_land)
 
     flags = (0) if args.only_good else (0, 1)
 
