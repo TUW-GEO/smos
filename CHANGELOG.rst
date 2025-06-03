@@ -4,6 +4,9 @@ Changelog
 
 Unreleased changes in master branch
 ===================================
+
+v0.4
+====
 - pass only_land bool to SMOSL2Reader in qa4sm-preprocessing
 - add only_land option to L4 grid creation and reshuffling
 - Add Grid_Point_Mask_USGS.nc to be used for masking (Geo2d mask)
