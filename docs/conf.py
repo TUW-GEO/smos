@@ -12,40 +12,6 @@ import sys
 import inspect
 import shutil
 
-
-import subprocess
-
-
-
-# Create kernel for notebooks
-on_rtd = "READTHEDOCS" in os.environ and os.environ["READTHEDOCS"]
-
-if not on_rtd:  # Only install kernel locally, not on RTD
-    try:
-        print("Installing kernel")
-        subprocess.run(
-            [
-                sys.executable,
-                "-m",
-                "ipykernel",
-                "install",
-                "--user",
-                "--name",
-                "conda-env-ismn-py",
-                "--display-name",
-                "Python [conda env:ismn]"
-            ],
-            check=True,
-            capture_output=True,
-        )
-        print("Done")
-    except (subprocess.CalledProcessError, FileNotFoundError) as e:
-        print(f"Kernel installation failed: {e}")
-        print("Continuing without kernel installation")
-else:
-    print("Skipping kernel installation on RTD")
-print("Done")
-
 # -- Path setup --------------------------------------------------------------
 
 __location__ = os.path.join(
