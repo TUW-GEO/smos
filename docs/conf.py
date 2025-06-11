@@ -12,40 +12,6 @@ import sys
 import inspect
 import shutil
 
-
-import subprocess
-
-
-# Create kernel for notebooks
-on_rtd = "READTHEDOCS" in os.environ and os.environ["READTHEDOCS"]
-if on_rtd:
-    rtd_project = os.environ["READTHEDOCS_PROJECT"]
-    rtd_version = os.environ["READTHEDOCS_VERSION"]
-    interpreter = (
-        f"/home/docs/checkouts/readthedocs.org/user_builds/{rtd_project}/"
-        f"conda/{rtd_version}/bin/python"
-    )
-else:
-    interpreter = "python"
-
-print("Installing kernel")
-subprocess.run(
-    [
-        interpreter,
-        "-m",
-        "ipykernel",
-        "install",
-        "--user",
-        "--name",
-        "conda-env-ismn-py",
-        "--display-name",
-        "Python [conda env:ismn]"
-    ],
-    check=True,
-    capture_output=True,
-)
-print("Done")
-
 # -- Path setup --------------------------------------------------------------
 
 __location__ = os.path.join(
