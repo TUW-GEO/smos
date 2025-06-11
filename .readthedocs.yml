@@ -1,16 +1,15 @@
 version: 2
 
+build:
+  os: ubuntu-22.04
+  tools:
+    python: "3.11"  # Use modern Python version
+
 sphinx:
   configuration: docs/conf.py
 
-submodules:
-  include: all
-
-conda:
-  environment: environment.yml
-
 python:
-  version: 3.8
   install:
+    - requirements: requirements.txt
     - method: pip
       path: .
