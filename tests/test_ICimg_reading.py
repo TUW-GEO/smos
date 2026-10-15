@@ -173,3 +173,36 @@ def test_SMOS_IC_Ds_version_selection():
         ds = SMOS_IC_Ds(tempdir, parameters=['Soil_Moisture'], version='106')
         ds.read(datetime(2018, 1, 1))
         assert os.path.basename(ds.fid.filename) == names[2]
+
+
+def _open_nc_files():
+    # netCDF files opened by this process (Linux only)
+    files = []
+    for fd in os.listdir('/proc/self/fd'):
+        try:
+            path = os.readlink(os.path.join('/proc/self/fd', fd))
+        except OSError:
+            continue
+        if path.endswith('.nc'):
+            files.append(os.path.realpath(path))
+    return files
+
+
+@pytest.mark.skipif(not os.path.isdir('/proc/self/fd'),
+                    reason="Checks open files via /proc (Linux)")
+@pytest.mark.parametrize("product", ['IC', 'L4'])
+def test_image_file_closed_after_reading(product):
+    # Image files must be closed after reading, otherwise they can't be
+    # deleted / moved on Windows while the reader object exists.
+    from smos.smos_l4.interface_l4 import SMOS_L4_Ds
+    testdata = os.path.join(os.path.dirname(__file__), 'smos-test-data')
+    if product == 'IC':
+        ds = SMOS_IC_Ds(os.path.join(testdata, 'L3_SMOS_IC', 'ASC'),
+                        parameters=['Soil_Moisture'])
+    else:
+        ds = SMOS_L4_Ds(os.path.join(testdata, 'L4_SMOS_RZSM', 'SCIE'),
+                        parameters=['RZSM'])
+    image = ds.read(datetime(2018, 1, 1))
+    assert np.isfinite(list(image.data.values())[0]).any()
+    assert os.path.realpath(ds.fid.filename) not in _open_nc_files()
+

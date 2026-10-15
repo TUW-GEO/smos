@@ -100,10 +100,10 @@ for time series (`update_ts`).
   classes (see `tests/smos_l3/test_l3_download.py` `_fake_server`). Do not add
   tests that download data.
 - CI: `.github/workflows/ci.yml`, ubuntu + windows, oldest and newest
-  supported Python version (currently 3.11 and 3.14), pip only. A new Python
-  release is first added as `experimental` job (allowed to fail) until all
-  dependencies provide wheels for it (check e.g. with the Docker build, the
-  slim image has no compilers), then it becomes the newest supported version.
+  supported Python version (currently 3.11 and 3.14), pip only. Only add a
+  new Python version once all dependencies provide wheels for it (check e.g.
+  with the Docker build, the slim image has no compilers) and the maintainer
+  agrees; Python 3.15 is not supported for now.
   Keep code Windows compatible (`os.path.join` for local paths,
   `PurePosixPath` for server paths).
 
@@ -115,14 +115,16 @@ for time series (`update_ts`).
   `docs/requirements.txt` anymore; don't re-add them.
 - `MANIFEST.in`: needed. setuptools_scm adds all git tracked files to the
   sdist, including the test data submodule (~40 MB); `MANIFEST.in` prunes it.
-- `.github/workflows/ci.yml`: tests (Linux, Windows), docs build, Docker build,
+- `.github/workflows/ci.yml`: tests (Linux, Windows), Docker build,
   coverage (Coveralls), and on `v*` tags of TUW-GEO publishing to PyPI and of
   the Docker image to ghcr.io. `.github/dependabot.yml` keeps the actions up
   to date.
 - `Dockerfile` / `.dockerignore`: two stage build (wheel built with git for
   the setuptools_scm version, installed into `python:<version>-slim` with
   lftp), runs as non-root user `smos`.
-- `.readthedocs.yml`: installs the package with the `docs` extra; `docs/conf.py`
+- `.readthedocs.yml`: the docs are only built by Read the Docs (not in CI);
+  warnings don't fail the build (no `fail_on_warning`). It installs the
+  package with the `docs` extra; `docs/conf.py`
   runs sphinx-apidoc for the API reference (`docs/api`, git-ignored).
 - `README.md` (Markdown, also the PyPI description): overview, installation
   and a quickstart; the docs include it via myst-parser
@@ -147,7 +149,8 @@ for time series (`update_ts`).
   `index.rst`): code examples must run against the test data
   (`testdata_path = '/path/to/smos-test-data'` placeholder). After changing
   docs, execute the code blocks and build with
-  `python -m sphinx -b html -q docs <outdir>`; it should produce no warnings.
+  `python -m sphinx -b html -q docs <outdir>` and check its warnings (they
+  don't fail the build, but usually point to broken references or examples).
 - `src/local_scripts/` is git-ignored and holds personal analysis scripts, not
   package code.
 

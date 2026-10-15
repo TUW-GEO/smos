@@ -124,45 +124,45 @@ class SMOS_L4_Img(SMOSImg):
     def _read_img(self) -> (dict, dict):
         # Read a netcdf image and metadata
 
-        ds = Dataset(self.filename)
-        self.glob_attrs = ds.__dict__
+        with Dataset(self.filename) as ds:
+            self.glob_attrs = ds.__dict__
 
-        param_img = {}
-        param_meta = {}
+            param_img = {}
+            param_meta = {}
 
-        if len(self.parameters) == 0:
-            # all data vars, exclude coord vars
-            self.parameters = [k for k in ds.variables.keys() if
-                               ds.variables[k].ndim != 1]
+            if len(self.parameters) == 0:
+                # all data vars, exclude coord vars
+                self.parameters = [k for k in ds.variables.keys() if
+                                   ds.variables[k].ndim != 1]
 
-        parameters = list(self.parameters)
+            parameters = list(self.parameters)
 
-        if self.oper is None:
-            self.oper = 'Quality' in ds.variables
+            if self.oper is None:
+                self.oper = 'Quality' in ds.variables
 
-        if not self.oper:
-            if (self.read_flags is not None) and ('QUAL' not in parameters):
-                parameters.append('QUAL')
-        else:
-            if (self.read_flags is not None) and ('Quality' not in parameters):
-                parameters.append('Quality')
+            if not self.oper:
+                if (self.read_flags is not None) and ('QUAL' not in parameters):
+                    parameters.append('QUAL')
+            else:
+                if (self.read_flags is not None) and ('Quality' not in parameters):
+                    parameters.append('Quality')
 
-        for parameter in parameters:
-            metadata = {}
-            param = ds.variables[parameter]
-            data = param[:]
+            for parameter in parameters:
+                metadata = {}
+                param = ds.variables[parameter]
+                data = param[:]
 
-            # read long name, FillValue and unit
-            for attr in param.ncattrs():
-                metadata[attr] = param.getncattr(attr)
+                # read long name, FillValue and unit
+                for attr in param.ncattrs():
+                    metadata[attr] = param.getncattr(attr)
 
-            data.mask = ~np.isfinite(data)
-            np.ma.set_fill_value(data, metadata['_FillValue'])
+                data.mask = ~np.isfinite(data)
+                np.ma.set_fill_value(data, metadata['_FillValue'])
 
-            metadata['image_missing'] = 0
+                metadata['image_missing'] = 0
 
-            param_img[parameter] = data
-            param_meta[parameter] = metadata
+                param_img[parameter] = data
+                param_meta[parameter] = metadata
 
         # filter with the flags (this excludes non-land points as well)
         if self.read_flags is not None:

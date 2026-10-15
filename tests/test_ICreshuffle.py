@@ -152,22 +152,23 @@ def test_SMOS_IC_reshuffle_missing_image_types(startdate, imgbuffer):
         assert ts.loc['2018-01-03', 'Scene_Flags'] == 0
 
 
-def test_firstfile(monkeypatch):
+def test_firstfile(monkeypatch, tmp_path):
+    # tmp_path (not a TemporaryDirectory) as the working directory is changed:
+    # Windows can't delete the current working directory
+    import shutil
     from smos.reshuffle import firstfile
     root = os.path.join(os.path.dirname(os.path.abspath(__file__)),
                         "smos-test-data", "L3_SMOS_IC")
-    with tempfile.TemporaryDirectory() as tmp:
-        import shutil
-        shutil.copytree(os.path.join(root, 'ASC'), os.path.join(tmp, 'ASC'))
-        # other files are ignored
-        with open(os.path.join(tmp, 'ASC', 'overview.yml'), 'w') as f:
-            f.write('first_day: 2018-01-01')
-        # relative paths work
-        monkeypatch.chdir(tmp)
-        f, variables = firstfile('ASC')
-        assert f == os.path.join('ASC', '2018', 'SM_RE06_MIR_CDF3SA_20180101T000000_'
-                                                '20180101T235959_106_001_8.DBL.nc')
-        assert 'Soil_Moisture' in variables
-        os.makedirs('empty')
-        with pytest.raises(IOError):
-            firstfile('empty')
+    shutil.copytree(os.path.join(root, 'ASC'), os.path.join(tmp_path, 'ASC'))
+    # other files are ignored
+    with open(os.path.join(tmp_path, 'ASC', 'overview.yml'), 'w') as f:
+        f.write('first_day: 2018-01-01')
+    # relative paths work
+    monkeypatch.chdir(tmp_path)
+    f, variables = firstfile('ASC')
+    assert f == os.path.join('ASC', '2018', 'SM_RE06_MIR_CDF3SA_20180101T000000_'
+                                            '20180101T235959_106_001_8.DBL.nc')
+    assert 'Soil_Moisture' in variables
+    os.makedirs('empty')
+    with pytest.raises(IOError):
+        firstfile('empty')

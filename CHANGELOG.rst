@@ -67,6 +67,8 @@ Bug fixes
 - Finding the first image file for the SMOS IC / L4 conversion failed for
   relative paths or other (non-netCDF) files in the image folder.
 - Keep the _FillValue mask of integer variables when reading SMOS IC images.
+- SMOS IC and L4 image files were not closed after reading, i.e. they could
+  not be moved or deleted (on Windows) while the reader object existed.
 - SMOS L3: damaged or incomplete archives (e.g. after an interrupted download)
   no longer stop the extraction of all other archives, and no partially
   extracted files are left.
@@ -78,13 +80,11 @@ Packaging, CI and documentation
   missing dependencies (click, tqdm, pyyaml). The conda ``environment.yml`` and
   ``tox.ini`` were removed.
 - Supported Python versions are 3.11 to 3.14 (dropped 3.10, which reaches its
-  end of life in October 2026). Python 3.15 is tested in CI, but not all
-  dependencies provide wheels for it yet.
+  end of life in October 2026).
 - Test data (git submodule) is not included in the source distribution.
   SMOS IC test data was updated to v106, SMOS L3 test data was added.
-- CI uses pip instead of conda, tests on Linux and Windows, builds the
-  documentation and the Docker image. Updated all GitHub Actions, added
-  Dependabot for them.
+- CI uses pip instead of conda, tests on Linux and Windows and builds the
+  Docker image. Updated all GitHub Actions, added Dependabot for them.
 - Docker image based on python-slim (instead of micromamba / alpine), runs as
   a non-root user.
 - Documentation: new pages for data download and test data, all examples
