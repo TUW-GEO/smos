@@ -22,6 +22,8 @@
 # SOFTWARE.
 
 import os
+import re
+import fnmatch
 import warnings
 import numpy as np
 import pandas as pd
@@ -191,10 +193,17 @@ class SMOSImg(ImageBase):
         Fill Value for masked pixels, this is only applied to float variables.
         Therefore e.g. mask variables are never filled but use the fill value
         as in the data.
+    empty_template : dict, optional (default: None)
+        Variable name -> (dtype, fill value), as returned by
+        `variable_template`. Used to create empty images (if the file is
+        missing) with the same data types as the actual images (integer
+        variables are masked). Without a template, all variables of an empty
+        image are float NaN.
     """
 
     def __init__(self, filename, mode='r', parameters=None, flatten=False,
-                 grid=EASE25CellGrid(bbox=None), read_flags=(0, 1), float_fillval=np.nan):
+                 grid=EASE25CellGrid(bbox=None), read_flags=(0, 1), float_fillval=np.nan,
+                 empty_template=None):
 
         super(SMOSImg, self).__init__(filename, mode=mode)
 
@@ -214,6 +223,45 @@ class SMOSImg(ImageBase):
         self.glob_attrs = None
 
         self.float_fillval = float_fillval
+        self.empty_template = empty_template
+
+    @staticmethod
+    def available_variables(ds) -> dict:
+        """
+        All image variables in the passed (open) netcdf file.
+
+        Returns
+        -------
+        variables: dict
+            Variable name (as returned by the reader) -> (name in file, index
+            in third dimension or None)
+        """
+        return {k: (k, None) for k, v in ds.variables.items() if v.ndim != 1}
+
+    @classmethod
+    def variable_template(cls, filename) -> dict:
+        """
+        Data type and fill value of all variables (as returned by the reader)
+        in the passed image file.
+
+        Returns
+        -------
+        template: dict
+            Variable name -> (numpy dtype, fill value)
+        """
+        template = {}
+        with Dataset(filename) as ds:
+            for name, (var, _) in cls.available_variables(ds).items():
+                v = ds.variables[var]
+                if ('scale_factor' in v.ncattrs()) or \
+                        ('add_offset' in v.ncattrs()):
+                    dtype = np.dtype('float64')  # unpacked
+                else:
+                    dtype = v.dtype
+                fill = v.getncattr('_FillValue') \
+                    if '_FillValue' in v.ncattrs() else None
+                template[name] = (dtype, fill)
+        return template
 
     def get_global_attrs(self, exclude=('history', 'NCO', 'netcdf_version_id', 'contact',
                                         'institution', 'creation_time')):
@@ -246,9 +294,24 @@ class SMOSImg(ImageBase):
         # Create shape based on grid type
         shape = rows if cols is None else (rows, cols)
 
-        for param in self.parameters: 
-            data = np.full(shape, np.nan)
-            return_img[param] = data.flatten()
+        if (self.empty_template is not None) and (len(self.parameters) == 0):
+            self.parameters = list(self.empty_template.keys())
+
+        for param in self.parameters:
+            data = np.full(shape, np.nan).flatten()
+            if (self.empty_template is not None) and \
+                    (param in self.empty_template):
+                # same data type as in the actual images
+                dtype, fill = self.empty_template[param]
+                if issubclass(dtype.type, np.floating):
+                    fv = self.float_fillval \
+                        if self.float_fillval is not None else np.nan
+                    data = np.full(data.shape, fv, dtype=dtype)
+                else:
+                    data = np.ma.masked_all(data.shape, dtype=dtype)
+                    if fill is not None:
+                        data.fill_value = fill
+            return_img[param] = data
             return_metadata[param] = {'image_missing': 1}
 
         return return_img, return_metadata
@@ -323,6 +386,8 @@ class SMOSImg(ImageBase):
         lons = np.unique(self.img.lon.flatten())
         lats = np.flipud(np.unique(self.img.lat.flatten()))
 
+        if os.path.dirname(image) != '':
+            os.makedirs(os.path.dirname(image), exist_ok=True)
         mode = 'w' if not os.path.isfile(image) else 'a'
         ds = Dataset(image, mode=mode, **kwargs)
 
@@ -390,6 +455,31 @@ class SMOSImg(ImageBase):
         pass
 
 
+class LatestVersionMixin:
+    """
+    Mixin for MultiTemporalImageBase classes. If multiple files are found
+    for a time stamp (e.g. different product versions, file counters or
+    processing campaigns), the one with the highest version (and file counter)
+    is used, instead of raising an error.
+    File names must end with _<version>_<counter>_<site>.DBL.nc
+    """
+
+    @staticmethod
+    def _version_key(filename):
+        # Sort key (version, file counter) from the file name
+        m = re.search(r"_(\d+)_(\d+)_\d+\.DBL\.nc$", os.path.basename(filename))
+        return (int(m.group(1)), int(m.group(2))) if m else (-1, -1)
+
+    def _build_filename(self, timestamp, custom_templ=None, str_param=None):
+        filename = self._search_files(timestamp,
+                                      custom_templ=custom_templ,
+                                      str_param=str_param)
+        if len(filename) == 0:
+            raise IOError(f"No file found for {timestamp.ctime()}")
+
+        return sorted(filename, key=self._version_key)[-1]
+
+
 class SMOSDs(MultiTemporalImageBase):
     """
     Class for reading SMOS images in nc format. Images are orgnaised in subdirs
@@ -417,12 +507,16 @@ class SMOSDs(MultiTemporalImageBase):
         Fill Value for masked pixels, this is only applied to float variables.
         Therefore e.g. mask variables are never filled but use the fill value
         as in the data.
+    subpath_templ : tuple, optional (default: ('%Y',))
+        Templates (strftime format) of the sub-folders in which the images
+        are organised, e.g. ('%Y', '%j') for yearly and day-of-year folders.
     """
 
 
     def __init__(self, data_path, ioclass, parameters=None, flatten=False,
                  grid=EASE25CellGrid(bbox=None), filename_templ=None,
-                 read_flags=(0, 1), float_fillval=np.nan, additional_kws=None):
+                 read_flags=(0, 1), float_fillval=np.nan, additional_kws=None,
+                 subpath_templ=('%Y',)):
 
         ioclass_kws = {'parameters': parameters,
                        'flatten': flatten,
@@ -433,7 +527,7 @@ class SMOSDs(MultiTemporalImageBase):
         if additional_kws:
             ioclass_kws.update(additional_kws)
 
-        sub_path = ['%Y']
+        sub_path = list(subpath_templ)
 
         super().__init__(data_path,
                          ioclass=ioclass,
@@ -442,6 +536,23 @@ class SMOSDs(MultiTemporalImageBase):
                          subpath_templ=sub_path,
                          exact_templ=False,
                          ioclass_kws=ioclass_kws)
+
+        # data types of all variables, to create empty images for missing
+        # dates with the same types as the actual images
+        first = self._first_file(data_path)
+        self.ioclass_kws['empty_template'] = \
+            ioclass.variable_template(first) if first else None
+
+    def _first_file(self, data_path):
+        # Find the first image file (matching the file name template) in
+        # data_path, None if there is none.
+        pattern = re.sub(r"\{[^}]*\}", "*", self.fname_templ or '*.nc')
+        for root, dirs, files in os.walk(data_path):
+            dirs.sort()
+            for f in sorted(files):
+                if fnmatch.fnmatch(f, pattern):
+                    return os.path.join(root, f)
+        return None
 
     def _assemble_img(self, timestamp, mask=False, **kwargs):
         img = None

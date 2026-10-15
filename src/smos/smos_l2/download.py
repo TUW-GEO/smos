@@ -260,7 +260,7 @@ class SmosDissEoFtp:
             cmd.append(opts)
         cmd.append(str(self.ftp_root / PurePosixPath(subpath)))
         cmd.append(f"{target_path}")
-        cmd.append('−−no−perms')
+        cmd.append('--no-perms')
         cmd = ' '.join(cmd)
 
         if dry_run:

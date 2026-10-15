@@ -22,10 +22,32 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
+import warnings
 import numpy as np
 from netCDF4 import Dataset
 from smos.grid import EASE25CellGrid
 from smos.interface import SMOSImg, SMOSDs
+
+
+def quality_range(read_flags):
+    """
+    Lower and upper quality threshold from the passed read_flags. Other than
+    2 values (e.g. a list of allowed quality values as in older versions) are
+    converted to their (min, max) range, with a warning.
+    """
+    if read_flags is None:
+        return None
+    flags = np.atleast_1d(read_flags).astype(float)
+    if len(flags) != 2:
+        rng = (float(np.min(flags)), float(np.max(flags)))
+        warnings.warn(f"read_flags is the lower and upper threshold of the "
+                      f"quality variable, {read_flags} is interpreted as "
+                      f"{rng}.")
+        return rng
+    if flags[0] > flags[1]:
+        raise ValueError(f"Lower quality threshold must be <= upper "
+                         f"threshold, got {read_flags}")
+    return float(flags[0]), float(flags[1])
 
 
 class SMOS_L4_Img(SMOSImg):
@@ -48,24 +70,33 @@ class SMOS_L4_Img(SMOSImg):
     grid : pygeogrids.CellGrid, optional (default: EASE25CellGrid)
         Grid that the image data is organised on, by default the global EASE25
         grid is used.
-    read_flags : tuple, list, np.array or None, optional (default: np.linspace(0,1,6,endpoint=True))
-        Filter values to read based on the selected quality flags.
-        Values for locations that are not assigned any of the here passed flags
-        are replaced with NaN (by default only the missing-data, i.e. flag=-1,
-        are filtered out). If None is passed, no flags are considered.
-    oper : bool, optional (default: False)
-        Boolean operator distinguishing between the SMOS L4 RZSM Scientific and Operational
-        products. Distinction is made due to differences in quality flag variable naming, values
-        and their significance (see docs/varnames.rst).
+    read_flags : tuple or None, optional (default: (0, 1))
+        Lower and upper threshold (both included) of the quality variable
+        (QUAL for the scientific, Quality for the operational product).
+        Values at locations where the quality is outside of this range or
+        missing are replaced with NaN. The scientific product has a quality
+        index between 0 and 1 (1.0 highest quality, in steps of 0.2), the
+        operational product -1 (missing data), 0 (not recommended) and 1 (OK),
+        i.e. the default (0, 1) only removes missing data, (1, 1) only keeps
+        the best quality. If None is passed, no filtering is applied.
+    oper : bool or None, optional (default: None)
+        Whether the file is from the SMOS L4 RZSM Scientific (False) or
+        Operational (True) product, which differ in the naming and values of
+        the quality variable (see docs/varnames.rst). If None is passed, this
+        is detected from the file (Quality variable -> operational).
     float_fillval : float or None, optional (default: np.nan)
         Fill Value for masked pixels, this is only applied to float variables.
         Therefore e.g. mask variables are never filled but use the fill value
         as in the data.
+    empty_template : dict, optional (default: None)
+        Variable name -> (dtype, fill value), as returned by
+        `variable_template`. Used to create empty images (if the file is
+        missing) with the correct data types (see `SMOSImg`).
     """
 
     def __init__(self, filename, mode='r', parameters=None, flatten=False,
-                 grid=EASE25CellGrid(bbox=None), read_flags=np.linspace(0,1,6,endpoint=True),
-                 oper=False, float_fillval=np.nan):
+                 grid=EASE25CellGrid(bbox=None), read_flags=(0, 1),
+                 oper=None, float_fillval=np.nan, empty_template=None):
 
         super().__init__(filename, mode=mode)
 
@@ -74,7 +105,7 @@ class SMOS_L4_Img(SMOSImg):
         if type(parameters) != list:
             parameters = [parameters]
 
-        self.read_flags = read_flags
+        self.read_flags = quality_range(read_flags)
         self.parameters = parameters
         self.flatten = flatten
 
@@ -87,6 +118,7 @@ class SMOS_L4_Img(SMOSImg):
         self.glob_attrs = None
 
         self.float_fillval = float_fillval
+        self.empty_template = empty_template
 
 
     def _read_img(self) -> (dict, dict):
@@ -104,6 +136,9 @@ class SMOS_L4_Img(SMOSImg):
                                ds.variables[k].ndim != 1]
 
         parameters = list(self.parameters)
+
+        if self.oper is None:
+            self.oper = 'Quality' in ds.variables
 
         if not self.oper:
             if (self.read_flags is not None) and ('QUAL' not in parameters):
@@ -131,10 +166,12 @@ class SMOS_L4_Img(SMOSImg):
 
         # filter with the flags (this excludes non-land points as well)
         if self.read_flags is not None:
-            if not self.oper:
-                flag_mask = ~np.isin(param_img['QUAL'], self.read_flags)
-            else:
-                flag_mask = ~np.isin(param_img['Quality'], self.read_flags)
+            qual = np.ma.filled(
+                param_img['Quality' if self.oper else 'QUAL'].astype(float),
+                np.nan)
+            # the quality is stored as float32, allow for rounding errors
+            lower, upper = self.read_flags
+            flag_mask = ~((qual >= lower - 1e-6) & (qual <= upper + 1e-6))
 
         else:
             flag_mask = np.full(param_img[parameters[0]].shape, False)
@@ -182,15 +219,20 @@ class SMOS_L4_Ds(SMOSDs):
     grid : pygeogrids.CellGrid, optional (default: EASE25CellGrid)
         Grid that the image data is organised on, by default the global EASE25
         grid is used.
-    read_flags : tuple, list, np.array or None, optional (default: np.linspace(0,1,6,endpoint=True))
-        Filter values to read based on the selected quality flags.
-        Values for locations that are not assigned any of the here passed flags
-        are replaced with NaN (by default only the missing-data, i.e. flag=-1,
-        are filtered out). If None is passed, no flags are considered.
-    oper : bool, optional (default: False)
-        Boolean operator distinguishing between the SMOS L4 RZSM Scientific and Operational
-        products. Distinction is made due to differences in quality flag variable naming, values
-        and their significance (see docs/varnames.rst).
+    read_flags : tuple or None, optional (default: (0, 1))
+        Lower and upper threshold (both included) of the quality variable
+        (QUAL for the scientific, Quality for the operational product).
+        Values at locations where the quality is outside of this range or
+        missing are replaced with NaN. The scientific product has a quality
+        index between 0 and 1 (1.0 highest quality, in steps of 0.2), the
+        operational product -1 (missing data), 0 (not recommended) and 1 (OK),
+        i.e. the default (0, 1) only removes missing data, (1, 1) only keeps
+        the best quality. If None is passed, no filtering is applied.
+    oper : bool or None, optional (default: None)
+        Whether the file is from the SMOS L4 RZSM Scientific (False) or
+        Operational (True) product, which differ in the naming and values of
+        the quality variable (see docs/varnames.rst). If None is passed, this
+        is detected from the file (Quality variable -> operational).
     float_fillval : float or None, optional (default: np.nan)
         Fill Value for masked pixels, this is only applied to float variables.
         Therefore e.g. mask variables are never filled but use the fill value
@@ -201,7 +243,7 @@ class SMOS_L4_Ds(SMOSDs):
 
     def __init__(self, data_path, parameters=None, flatten=False,
                  grid=EASE25CellGrid(bbox=None), filename_templ=None,
-                 read_flags=np.linspace(0,1,6,endpoint=True), oper=False, float_fillval=np.nan):
+                 read_flags=(0, 1), oper=None, float_fillval=np.nan):
 
         if filename_templ is None:
             filename_templ = self.default_fname_template

@@ -74,12 +74,13 @@ class EASE25CellGrid(CellGrid):
             shape = (len(sgpis),)
 
         # Apply original land mask if only_land is True but no bbox is specified
+        # Land points are a subset of the global grid, i.e. the gpis are the
+        # same as in the global grid (not renumbered).
         elif only_land:
             land_points = np.ma.masked_array(globgrid.get_grid_points()[0], land_mask)
-            grid = globgrid.subgrid_from_gpis(land_points[~land_points.mask].filled())
-            sgpis = grid.activegpis
-            shape = grid.shape
-            params = {}
+            sgpis = globgrid.activegpis[~land_points.mask]
+            params = {'subset': sgpis}
+            shape = (len(sgpis),)
 
         # Apply original bbox filter if only bbox is specified (no land mask)
         elif self.bbox:

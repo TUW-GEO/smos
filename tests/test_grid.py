@@ -63,3 +63,27 @@ def test_EASE25CellGrid_land():
 
     grid.activearrcell[217621] == 1078
     max(grid.get_cells()) == 2588
+
+
+def test_EASE25CellGrid_land_keeps_gpis():
+    # land points are a subset of the global grid, with the same gpis
+    grid = EASE25CellGrid()
+    land = EASE25CellGrid(only_land=True)
+    gpis = land.activegpis
+    assert gpis.size == 217622
+    assert gpis.max() > 217622  # not renumbered
+    nptest.assert_array_equal(land.activearrlon, grid.arrlon[gpis])
+    nptest.assert_array_equal(land.activearrlat, grid.arrlat[gpis])
+    nptest.assert_array_equal(land.activearrcell, grid.arrcell[gpis])
+    # the cut grid (used for reshuffling) keeps the gpis as well
+    nptest.assert_array_equal(np.sort(land.cut().gpis), np.sort(gpis))
+
+    # same nearest gpi for a land point in both grids (Vienna)
+    assert land.find_nearest_gpi(16.37, 48.21)[0] == \
+        grid.find_nearest_gpi(16.37, 48.21)[0] == 708637
+
+    # land + bbox is a subset of the land points (also with global gpis)
+    land_eu = EASE25CellGrid(only_land=True, bbox=(-11., 34., 43., 71.))
+    assert set(land_eu.activegpis) <= set(gpis)
+    eu = EASE25CellGrid(bbox=(-11., 34., 43., 71.))
+    assert set(land_eu.activegpis) <= set(eu.activegpis)

@@ -1,5 +1,5 @@
 import click
-from datetime import datetime, timedelta
+from datetime import timedelta
 import pandas as pd
 
 from smos.smos_l2.download import SmosDissEoFtp, L2_START_DATE
@@ -99,7 +99,7 @@ def cli_update_img(path,
     NOTE: Before using this program, create an account at
     https://eoiam-idp.eo.esa.int and ideally store you credentials in the
     file $HOME/.smosapirc (to avoid passing them as plain text).
-    NOTE: Use the `smos_l2 download` program first do create a local record
+    NOTE: Use the `smos l2 download` program first do create a local record
     to update with this function.
 
     \b
@@ -129,14 +129,14 @@ def cli_update_img(path,
     '-s',
     type=click.STRING,
     default=None,
-    help="Format YYYY-MM-DD | First day to include in the"
+    help="Format YYYY-MM-DD | First day to include in the "
     "time series. [default: Date of the first available image]")
 @click.option(
     '--enddate',
     '-e',
     type=click.STRING,
     default=None,
-    help="Format YYYY-MM-DD | Last day to include in the"
+    help="Format YYYY-MM-DD | Last day to include in the "
     "time series. [default: Date of the last available image]")
 @click.option(
     '--variables',
@@ -159,15 +159,14 @@ def cli_reshuffle(img_path, ts_path, startdate, enddate, variables,
     following CF conventions (Indexed Ragged format).
     This format is preferred for performant location-based reading of SM data
     over the full period. To read the generated time series data, you can then
-    use the `smos.smos_l2.interface.SmosL2Ts` or
-    `pynetcf.time_series.GriddedNcIndexedRagged` class.
+    use the `pynetcf.time_series.GriddedNcIndexedRaggedTs` class.
 
     \b
     Required Parameters
     -------------------
     IMG_PATH: string
         Path where previously downloaded SMOS images are stored. Use the
-        `smos_l2 download` command to retrieve image data.
+        `smos l2 download` command to retrieve image data.
     TS_PATH: string
         Path where the newly created time series files should be stored.
     """
@@ -197,7 +196,7 @@ def cli_update_ts(img_path, ts_path):
     Extend a locally existing SMOS L2 time series record by appending new data
     from the swath files. This will detect the time range of the time series
     data and compare it against the available image data.
-    NOTE: Use the `smos_l2 reshuffle` program first do create a time series
+    NOTE: Use the `smos l2 reshuffle` program first do create a time series
     record to update with this function.
 
     \b
@@ -215,7 +214,7 @@ def cli_update_ts(img_path, ts_path):
     extend_ts(img_path, ts_path)
 
 @click.group(short_help="SMOS L2 Command Line Programs.",
-             name="smos_l2")
+             name="l2")
 def smos_l2():
     pass
 

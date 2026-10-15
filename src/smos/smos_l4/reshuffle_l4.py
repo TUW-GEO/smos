@@ -28,12 +28,11 @@ time series format using the repurpose package
 
 import os
 import sys
-from datetime import datetime
 
 from repurpose.img2ts import Img2Ts
 from smos.smos_l4.interface_l4 import SMOS_L4_Img, SMOS_L4_Ds
 from smos.grid import EASE25CellGrid
-from smos.reshuffle import firstfile, mkdate, str2bool, parse_args
+from smos.reshuffle import firstfile, parse_args
 
 
 def reshuffle(input_root, outputpath,
@@ -69,7 +68,7 @@ def reshuffle(input_root, outputpath,
     # this is only for reading the ts_attrs
     input_dataset = SMOS_L4_Img(filename=os.path.join(fp, ff),
                             parameters=ds_kwargs['parameters'], flatten=True, read_flags=None,
-                            grid=ds_kwargs['grid'], oper=ds_kwargs['oper'] if 'oper' in ds_kwargs else False)
+                            grid=ds_kwargs['grid'], oper=ds_kwargs.get('oper', None))
     _, ts_attributes = input_dataset._read_img()
     global_attr = input_dataset.get_global_attrs()
 
@@ -104,7 +103,10 @@ def main(args):
     input_grid = EASE25CellGrid(bbox=tuple(args.bbox) if args.bbox is not None else None,
                                only_land=args.only_land)
 
-    flags = (0) if args.only_good else (0, 1)
+    # quality range: (1, 1) only keeps the best quality (QUAL=1 for the
+    # scientific, Quality=1 for the operational product), (0, 1) only
+    # removes missing data
+    flags = (1, 1) if args.only_good else (0, 1)
 
     ds_kwargs = {'read_flags': flags, 'grid': input_grid,
                  'parameters': args.parameters}

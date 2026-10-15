@@ -1,0 +1,2 @@
+# Test data is a separate repository (git submodule), see docs/testdata.rst
+prune tests/smos-test-data

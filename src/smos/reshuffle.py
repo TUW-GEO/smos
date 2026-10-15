@@ -45,15 +45,16 @@ def firstfile(input_root):
     '''
 
     for curr, subdirs, files in os.walk(input_root):
-        for f in files:
-            if len(f) > 0:
-                firstfile = os.path.join(input_root, curr, f)
-                ds = Dataset(firstfile)
-                vars = ds.variables.keys()
+        subdirs.sort()  # walk in sorted order, i.e. find the first year
+        for f in sorted(files):
+            if f.endswith('.nc'):
+                firstfile = os.path.join(curr, f)
+                with Dataset(firstfile) as ds:
+                    vars = list(ds.variables.keys())
 
                 return firstfile, vars
 
-    raise (IOError, 'No netcdf data found under the passed root directory')
+    raise IOError(f'No netcdf data found under {input_root}')
 
 
 def mkdate(datestring):
@@ -121,10 +122,10 @@ def parse_args(args):
                               "Default: None"))
 
     parser.add_argument("--only_good", type=str2bool, default='False',
-                        help=("Use only observations with Quality_Flag 0 (GOOD), "
-                              "if this is False, also 1-flagged (not recommended) "
-                              "ones will be read and reshuffled, 2-flagged (missing)"
-                              "values are always masked. Default: False"))
+                        help=("SMOS L4: only use observations of the best "
+                              "quality (QUAL / Quality = 1), otherwise only "
+                              "missing data is masked. Has no effect for "
+                              "SMOS IC. Default: False"))
 
     parser.add_argument("--bbox", type=float, default=None, nargs=4,
                         help=("min_lon min_lat max_lon max_lat. "
