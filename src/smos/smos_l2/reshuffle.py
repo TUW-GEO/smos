@@ -68,7 +68,7 @@ def swath2ts(img_path, ts_path, variables=_default_variables,
     if start is None or end is None:
         raise ValueError("No start and/or end date provided.")
 
-    out_file = os.path.join(ts_path, f"overview.yml")
+    out_file = os.path.join(ts_path, "overview.yml")
 
     if os.path.isfile(out_file):
         props = read_summary_yml(ts_path)
@@ -112,7 +112,7 @@ def extend_ts(img_path, ts_path, memory=4, only_land=False):
     memory: int, optional (default: 4)
         Available memory in GB
     """
-    out_file = os.path.join(ts_path, f"overview.yml")
+    out_file = os.path.join(ts_path, "overview.yml")
     if not os.path.isfile(out_file):
         raise ValueError("No overview.yml found in the time series directory."
                          "Please use reshuffle / swath2ts for initial time "
@@ -132,7 +132,7 @@ def extend_ts(img_path, ts_path, memory=4, only_land=False):
 
         reader = SMOSL2Reader(img_path, only_land=only_land)
 
-        print(f"Extent TimeSeries data From: {startdate}, To: {last_day}")
+        print(f"Extend TimeSeries data From: {startdate}, To: {last_day}")
 
         r = reader.repurpose(
             outpath=ts_path,

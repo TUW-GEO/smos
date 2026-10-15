@@ -28,12 +28,12 @@ time series format using the repurpose package
 
 import os
 import sys
-from datetime import datetime
+import warnings
 
 from repurpose.img2ts import Img2Ts
 from smos.smos_ic.interface_ic import SMOS_IC_Img, SMOS_IC_Ds
 from smos.grid import EASE25CellGrid
-from smos.reshuffle import firstfile, mkdate, str2bool, parse_args
+from smos.reshuffle import firstfile, parse_args
 
 
 def reshuffle(input_root, outputpath,
@@ -68,7 +68,7 @@ def reshuffle(input_root, outputpath,
 
     # this is only for reading the ts_attrs
     input_dataset = SMOS_IC_Img(filename=os.path.join(fp, ff),
-                                parameters=ds_kwargs['parameters'], flatten=True, read_flags=None,
+                                parameters=ds_kwargs['parameters'], flatten=True,
                                 grid=ds_kwargs['grid'])
     _, ts_attributes = input_dataset._read_img()
     global_attr = input_dataset.get_global_attrs()
@@ -101,12 +101,15 @@ def main(args):
     """
     args = parse_args(args)
 
-    input_grid = EASE25CellGrid(bbox=tuple(args.bbox) if args.bbox is not None else None)
+    input_grid = EASE25CellGrid(bbox=tuple(args.bbox) if args.bbox is not None else None,
+                                only_land=args.only_land)
 
-    flags = (0) if args.only_good else (0, 1)
+    if args.only_good:
+        warnings.warn("SMOS IC (v106) does not contain a Quality_Flag. "
+                      "Not recommended observations are already removed "
+                      "from the data, --only_good is ignored.")
 
-    ds_kwargs = {'read_flags': flags, 'grid': input_grid,
-                 'parameters': args.parameters}
+    ds_kwargs = {'grid': input_grid, 'parameters': args.parameters}
 
     reshuffle(args.dataset_root,
               args.timeseries_root,

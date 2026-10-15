@@ -41,30 +41,31 @@ def test_SMOS_IC_Ds_subset(stackfile, files):
     dsname = os.path.join(os.path.dirname(__file__),
                           'smos-test-data', 'L3_SMOS_IC', 'ASC')
     subgrid = EASE25CellGrid(bbox=(-11., 34., 43., 71.))
-    params = ['Soil_Moisture', 'Quality_Flag']
+    params = ['Soil_Moisture', 'Scene_Flags']
 
-    ds = SMOS_IC_Ds(dsname, parameters=params, grid=subgrid, read_flags=(0, 1))
+    ds = SMOS_IC_Ds(dsname, parameters=params, grid=subgrid)
     image = ds.read(datetime(2018, 1, 1))
 
     # europe subset
     assert image.data['Soil_Moisture'].shape == (113, 208)
     assert list(image.data.keys()) == params
 
-    assert np.nanmax(np.nanmax(image.data['Quality_Flag'])) == 1
-    assert np.nanmax(np.nanmin(image.data['Quality_Flag'])) == 0
+    # v106 data is pre-screened, only moderate topography (1) is kept
+    valid = np.isfinite(image.data['Soil_Moisture'])
+    assert sorted(np.unique(image.data['Scene_Flags'][valid])) == [0, 1]
 
     # index in global file [508, 772]
-    nptest.assert_almost_equal(image.data['Soil_Moisture'][60, 120], 0.31218, decimal=4)
+    nptest.assert_almost_equal(image.data['Soil_Moisture'][60, 120], 0.313099, decimal=4)
     nptest.assert_almost_equal(image.lon[60, 120], 20.36023, decimal=4)
     nptest.assert_almost_equal(image.lat[60, 120], 47.682177, decimal=4)
 
     nptest.assert_almost_equal(image.lon[25, 130], 22.95389, 4)
     nptest.assert_almost_equal(image.lat[25, 130], 59.1181825, 4)
     assert np.isnan(image.data['Soil_Moisture'][25, 130])
-    np.ma.is_masked(image.data['Quality_Flag'][25, 130])
+    assert np.ma.is_masked(image.data['Scene_Flags'][25, 130])
 
-    outdir = mkdtemp()
-    os.makedirs(outdir, exist_ok=True)
+    # the output folder is created if it does not exist
+    outdir = os.path.join(mkdtemp(), 'new', 'folder')
     ds.write_multiple(root_path=outdir, start_date=datetime(2018, 1, 1),
                       end_date=datetime(2018, 1, 3), stackfile=stackfile)
 

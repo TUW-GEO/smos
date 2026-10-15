@@ -1,8 +1,85 @@
 [build-system]
-# AVOID CHANGING REQUIRES: IT WILL BE UPDATED BY PYSCAFFOLD!
-requires = ["setuptools>=46.1.0", "setuptools_scm[toml]>=5", "wheel"]
+requires = ["setuptools>=77", "setuptools_scm[toml]>=8"]
 build-backend = "setuptools.build_meta"
+
+[project]
+name = "smos"
+description = "SMOS (Soil Moisture and Ocean Salinity) image data readers and TS converter"
+readme = { file = "README.md", content-type = "text/markdown" }
+license = "MIT"
+license-files = ["LICENSE.txt"]
+authors = [{ name = "TU Wien", email = "remote.sensing@geo.tuwien.ac.at" }]
+requires-python = ">=3.11"
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
+]
+dynamic = ["version"]
+dependencies = [
+    "numpy",
+    "scipy",
+    "pandas",
+    "dask[distributed]",
+    "xarray",
+    "netCDF4",
+    "h5py",
+    "pyresample",
+    "pyproj",
+    "repurpose>=0.13.1",
+    "pygeogrids>=0.3.2",
+    "pynetcf>=0.5.1",
+    "pygeobase",
+    "ease_grid",
+    "trollsift",
+    "more_itertools",
+    "cf-xarray",
+    "qa4sm_preprocessing>=0.5",
+    "click",
+    "tqdm",
+    "pyyaml",
+]
+
+[project.optional-dependencies]
+testing = [
+    "pytest",
+    "pytest-cov",
+]
+docs = [
+    "sphinx>=7",
+    "myst-parser",
+]
+
+[project.urls]
+Homepage = "https://github.com/TUW-GEO/smos"
+Documentation = "https://smos.readthedocs.io/en/latest/"
+
+[project.scripts]
+smos = "smos.cli:smos"
+# deprecated, use `smos l2`
+smos_l2 = "smos.smos_l2.cli:smos_l2"
+
+[tool.setuptools]
+include-package-data = true
+
+[tool.setuptools.packages.find]
+where = ["src"]
+include = ["smos", "smos.*"]
 
 [tool.setuptools_scm]
 # See configuration details in https://github.com/pypa/setuptools_scm
 version_scheme = "no-guess-dev"
+
+[tool.yapf]
+based_on_style = "yapf"
+indent_width = 4
+column_limit = 79
+
+[tool.pytest.ini_options]
+addopts = "--cov smos --cov-report term-missing --verbose"
+norecursedirs = ["dist", "build"]
+testpaths = ["tests"]

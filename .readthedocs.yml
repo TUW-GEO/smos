@@ -1,15 +1,23 @@
+# Read the Docs configuration file
+# See https://docs.readthedocs.io/en/stable/config-file/v2.html
 version: 2
 
 build:
-  os: ubuntu-22.04
+  os: ubuntu-24.04
   tools:
-    python: "3.11"  # Use modern Python version
+    python: "3.14"
+  jobs:
+    post_checkout:
+      # Read the Docs clones without tags, setuptools_scm needs them to
+      # derive the package version
+      - git fetch --unshallow --tags || true
 
 sphinx:
   configuration: docs/conf.py
 
 python:
   install:
-    - requirements: docs/requirements.txt
     - method: pip
       path: .
+      extra_requirements:
+        - docs

@@ -1,4 +1,8 @@
-.. include:: ../README.rst
+.. include:: ../README.md
+   :parser: myst_parser.sphinx_
+
+.. include:: download.rst
+.. include:: testdata.rst
 .. include:: reading.rst
 .. include:: write.rst
 .. include:: varnames.rst
@@ -10,6 +14,8 @@ Contents
 .. toctree::
    :maxdepth: 2
 
+   Data download <download>
+   Test data <testdata>
    Data reading <reading>
    Data writing <write>
    Variable names <varnames>
